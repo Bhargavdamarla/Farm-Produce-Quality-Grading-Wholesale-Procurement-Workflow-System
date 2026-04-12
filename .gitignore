@@ -1,0 +1,28 @@
+# Frontend
+Frontend/node_modules/
+Frontend/dist/
+Frontend/.env
+Frontend/.DS_Store
+
+# Backend
+Backend/target/
+Backend/.mvn/wrapper/maven-wrapper.jar
+Backend/logs/
+Backend/*.log
+Backend/.classpath
+Backend/.project
+Backend/.settings/
+Backend/.idea/
+Backend/*.iml
+Backend/.vscode/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+
+# Visual Studio Code
+.vscode/
+
+# Mac
+.DS_Store
