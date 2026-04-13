@@ -4,10 +4,9 @@ import API from '../api/api';
 export const createProduce = async (data) => {
   try {
     const response = await API.post('/produce', {
-      categoryName: data.categoryName,
-      quantity: data.quantity,
-      unitType: data.unitType,
-      harvestDate: data.harvestDate,
+      farmerId: 1, // Using hardcoded test user ID 1
+      categoryId: 1, // Using hardcoded category ID 1 
+      quantity: data.quantity
     });
     return response.data;
   } catch (error) {

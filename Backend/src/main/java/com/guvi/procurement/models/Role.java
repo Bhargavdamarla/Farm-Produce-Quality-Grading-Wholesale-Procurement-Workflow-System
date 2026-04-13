@@ -2,7 +2,7 @@ package com.guvi.procurement.models;
 
 public enum Role {
     FARMER,
-    INSPECTOR,
+    QUALITY_INSPECTOR,
     PROCUREMENT_OFFICER,
     ADMIN
 }

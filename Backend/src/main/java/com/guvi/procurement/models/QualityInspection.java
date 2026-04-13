@@ -11,7 +11,7 @@ public class QualityInspection {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "produce_id", nullable = false)
     private FarmProduce produce;
 
@@ -21,9 +21,17 @@ public class QualityInspection {
 
     private Double qualityScore; // 0 to 100
 
+    @ManyToOne
+    @JoinColumn(name = "grade_id")
+    private QualityGrade grade; // Link to QualityGrade entity
+
     @Enumerated(EnumType.STRING)
-    private ProduceGrade grade;
+    private InspectionStatus status = InspectionStatus.ASSIGNED;
 
     private String remarks;
     private LocalDateTime inspectionDate = LocalDateTime.now();
+
+    public enum InspectionStatus {
+        ASSIGNED, INSPECTED, APPROVED, REJECTED
+    }
 }

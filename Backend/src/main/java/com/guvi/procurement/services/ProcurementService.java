@@ -39,7 +39,9 @@ public class ProcurementService {
         ProcurementOrder order = new ProcurementOrder();
         order.setProduce(produce);
         order.setOfficer(officer);
-        order.setPriceAgreed(request.getPriceAgreed());
+        order.setQuantity(produce.getQuantity());
+        order.setUnitPrice(request.getPriceAgreed());
+        order.setTotalAmount(produce.getQuantity() * request.getPriceAgreed());
         
         produce.setStatus(ProduceStatus.PROCURED);
         produceRepository.save(produce);

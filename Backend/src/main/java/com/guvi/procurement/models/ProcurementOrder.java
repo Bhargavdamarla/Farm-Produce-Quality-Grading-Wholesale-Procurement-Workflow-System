@@ -11,7 +11,7 @@ public class ProcurementOrder {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "produce_id", nullable = false)
     private FarmProduce produce;
 
@@ -19,6 +19,8 @@ public class ProcurementOrder {
     @JoinColumn(name = "officer_id", nullable = false)
     private User officer;
 
-    private Double priceAgreed;
-    private LocalDateTime procurementDate = LocalDateTime.now();
+    private Double quantity;
+    private Double unitPrice;
+    private Double totalAmount; // quantity × unitPrice
+    private LocalDateTime orderDate = LocalDateTime.now();
 }

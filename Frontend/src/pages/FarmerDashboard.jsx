@@ -10,6 +10,10 @@ const FarmerDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState('ALL');
 
+  // Get real logged-in user from localStorage
+  const authData = JSON.parse(localStorage.getItem('authData') || '{}');
+  const farmerId = authData.id;
+
   useEffect(() => {
     fetchProduces();
   }, []);
@@ -17,7 +21,7 @@ const FarmerDashboard = () => {
   const fetchProduces = async () => {
     setLoading(true);
     try {
-      const data = await getFarmerProduce('mock-farmer-id');
+      const data = await getFarmerProduce(farmerId);
       setProduces(data || []);
     } catch (error) {
       console.error('Failed to fetch produces:', error);

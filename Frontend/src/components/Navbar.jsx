@@ -7,52 +7,52 @@ const Navbar = ({ userName, userRole, onLogout }) => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    onLogout();
+    if (onLogout) onLogout();
     navigate('/login');
   };
 
-  const getRoleDisplay = () => {
+  const getRoleBadge = () => {
     const roles = {
-      FARMER: '👨‍🌾 Farmer',
-      QUALITY_INSPECTOR: '🔍 Inspector',
-      PROCUREMENT_OFFICER: '🛒 Procurement',
-      ADMIN: '⚙️ Admin',
+      FARMER:              { label: 'Farmer',             icon: '🌾' },
+      QUALITY_INSPECTOR:   { label: 'Quality Inspector',  icon: '🔍' },
+      PROCUREMENT_OFFICER: { label: 'Procurement Officer',icon: '🛒' },
+      ADMIN:               { label: 'Admin',               icon: '⚙️' },
     };
-    return roles[userRole] || userRole;
+    return roles[userRole] || { label: userRole, icon: '👤' };
   };
+
+  const badge = getRoleBadge();
 
   return (
     <nav className="navbar">
       <div className="navbar-container">
+        {/* Brand */}
         <div className="navbar-brand">
-          <h1>🌾 AgriProcure</h1>
-          <span className="tagline">Quality Grading & Procurement System</span>
+          <div>
+            <h1>🌾 AgriProcure</h1>
+            <span className="tagline">Quality Grading & Procurement System</span>
+          </div>
         </div>
 
-        <ul className="navbar-menu">
-          <li><a href="#features">Features</a></li>
-          <li><a href="#about">About</a></li>
-          <li><a href="#contact">Contact</a></li>
-        </ul>
-
+        {/* Right side */}
         <div className="navbar-user">
-          <div className="user-info">
-            <span className="user-role">{getRoleDisplay()}</span>
-            <span className="user-name">{userName}</span>
-          </div>
+          {userName && (
+            <div className="user-info">
+              <span className="user-role">{badge.icon} {badge.label}</span>
+              <span className="user-name">{userName}</span>
+            </div>
+          )}
 
           <div className="dropdown">
             <button
               className="dropdown-btn"
               onClick={() => setShowDropdown(!showDropdown)}
+              aria-label="User menu"
             >
               ⋮
             </button>
             {showDropdown && (
               <div className="dropdown-menu">
-                <a href="#profile">👤 Profile</a>
-                <a href="#settings">⚙️ Settings</a>
-                <hr />
                 <button onClick={handleLogout} className="logout-btn">
                   🚪 Logout
                 </button>

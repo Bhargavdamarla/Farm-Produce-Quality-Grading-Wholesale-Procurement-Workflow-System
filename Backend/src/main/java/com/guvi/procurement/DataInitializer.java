@@ -31,7 +31,7 @@ public class DataInitializer implements CommandLineRunner {
             User inspector = new User();
             inspector.setName("Alice Inspector");
             inspector.setEmail("inspector@example.com");
-            inspector.setRole(Role.INSPECTOR);
+            inspector.setRole(Role.QUALITY_INSPECTOR);
 
             User officer = new User();
             officer.setName("Bob Officer");

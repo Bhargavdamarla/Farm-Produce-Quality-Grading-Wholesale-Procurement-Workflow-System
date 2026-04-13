@@ -4,6 +4,7 @@ import './App.css';
 
 // Pages
 import Login from './pages/Login.jsx';
+import Signup from './pages/Signup.jsx';
 import FarmerDashboard from './pages/FarmerDashboard.jsx';
 import InspectorDashboard from './pages/InspectorDashboard.jsx';
 import ProcurementDashboard from './pages/ProcurementDashboard.jsx';
@@ -29,6 +30,7 @@ function App() {
     }
   }, []);
 
+
   const handleLoginSuccess = (data) => {
     setIsAuthenticated(true);
     setUserRole(data.role);
@@ -37,10 +39,11 @@ function App() {
       'authData',
       JSON.stringify({
         isAuth: true,
+        id: data.id,
         role: data.role,
         name: data.name,
         email: data.email,
-        token: data.token,
+        createdAt: data.createdAt,
       })
     );
   };
@@ -59,7 +62,7 @@ function App() {
       )}
       
       <Routes>
-        {/* Public Route */}
+        {/* Public Routes */}
         <Route
           path="/login"
           element={
@@ -70,6 +73,7 @@ function App() {
             )
           }
         />
+        <Route path="/signup" element={<Signup />} />
 
         {/* Protected Routes */}
         <Route

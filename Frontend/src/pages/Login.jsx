@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { login } from '../services/authService';
 import '../styles.css';
 
 const Login = ({ onLoginSuccess }) => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
-
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [generalError, setGeneralError] = useState('');
@@ -32,9 +29,7 @@ const Login = ({ onLoginSuccess }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
   };
 
   const handleSubmit = async (e) => {
@@ -49,28 +44,17 @@ const Login = ({ onLoginSuccess }) => {
 
     setLoading(true);
     try {
-      // Mock login - replace with actual API call
-      const mockUsers = {
-        'farmer@test.com': { role: 'FARMER', name: 'Farmer John' },
-        'inspector@test.com': { role: 'QUALITY_INSPECTOR', name: 'Inspector Sarah' },
-        'procurement@test.com': { role: 'PROCUREMENT_OFFICER', name: 'Officer Mike' },
-        'admin@test.com': { role: 'ADMIN', name: 'Admin Root' },
+      const user = await login(formData.email, formData.password);
+      onLoginSuccess(user);
+      const roleRoutes = {
+        FARMER: '/farmer',
+        INSPECTOR: '/inspector',
+        PROCUREMENT_OFFICER: '/procurement',
+        ADMIN: '/admin',
       };
-
-      const user = mockUsers[formData.email];
-      if (user && formData.password === 'password123') {
-        onLoginSuccess({
-          ...user,
-          email: formData.email,
-          token: 'mock-jwt-token-' + Date.now(),
-        });
-        navigate(`/${user.role.toLowerCase()}`);
-      } else {
-        setGeneralError('Invalid email or password. Try: farmer@test.com / password123');
-      }
+      navigate(roleRoutes[user.role] || '/');
     } catch (error) {
-      setGeneralError('Login failed. Please try again.');
-      console.error('Login error:', error);
+      setGeneralError(error.response?.data?.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -82,16 +66,14 @@ const Login = ({ onLoginSuccess }) => {
         <div className="login-box">
           <div className="login-header">
             <h1>🌾 Agricultural Procurement System</h1>
-            <p>Farm Produce Quality Grading & Wholesale Procurement</p>
+            <p>Farm Produce Quality Grading &amp; Wholesale Procurement</p>
           </div>
 
           <form onSubmit={handleSubmit} className="login-form">
             <h2>Sign In</h2>
 
             {generalError && (
-              <div className="error-message">
-                <strong>⚠️ {generalError}</strong>
-              </div>
+              <div className="error-message"><strong>⚠️ {generalError}</strong></div>
             )}
 
             <div className="form-group">
@@ -134,37 +116,15 @@ const Login = ({ onLoginSuccess }) => {
               {errors.password && <span className="error-text">{errors.password}</span>}
             </div>
 
-            <button
-              type="submit"
-              className="btn-login"
-              disabled={loading}
-            >
+            <button type="submit" className="btn-login" disabled={loading}>
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
-          </form>
 
-          <div className="demo-credentials">
-            <h3>Demo Credentials:</h3>
-            <div className="role-login">
-              <div className="role-item">
-                <strong>👨‍🌾 Farmer</strong>
-                <p>farmer@test.com</p>
-              </div>
-              <div className="role-item">
-                <strong>🔍 Inspector</strong>
-                <p>inspector@test.com</p>
-              </div>
-              <div className="role-item">
-                <strong>🛒 Procurement</strong>
-                <p>procurement@test.com</p>
-              </div>
-              <div className="role-item">
-                <strong>⚙️ Admin</strong>
-                <p>admin@test.com</p>
-              </div>
-            </div>
-            <p className="password-hint">Password for all: <code>password123</code></p>
-          </div>
+            <p style={{ textAlign: 'center', marginTop: '16px', color: '#666' }}>
+              Don't have an account?{' '}
+              <Link to="/signup" style={{ color: '#27ae60', fontWeight: '600' }}>Sign Up</Link>
+            </p>
+          </form>
 
           <div className="login-footer">
             <p>© 2026 Agricultural Procurement System | GUVI Hackathon</p>

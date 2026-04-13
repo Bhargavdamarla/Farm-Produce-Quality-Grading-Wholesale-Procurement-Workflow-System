@@ -35,19 +35,12 @@ public class QualityService {
         inspection.setInspector(inspector);
         inspection.setQualityScore(request.getQualityScore());
         inspection.setRemarks(request.getRemarks());
+        inspection.setStatus(QualityInspection.InspectionStatus.INSPECTED);
 
-        // Auto Grade based on score
-        if (request.getQualityScore() >= 80) {
-            inspection.setGrade(ProduceGrade.A);
-            produce.setStatus(ProduceStatus.ACCEPTED);
-        } else if (request.getQualityScore() >= 60) {
-            inspection.setGrade(ProduceGrade.B);
-            produce.setStatus(ProduceStatus.ACCEPTED);
-        } else if (request.getQualityScore() >= 40) {
-            inspection.setGrade(ProduceGrade.C);
+        // Auto-update produce status based on score
+        if (request.getQualityScore() >= 40) {
             produce.setStatus(ProduceStatus.ACCEPTED);
         } else {
-            inspection.setGrade(ProduceGrade.REJECTED);
             produce.setStatus(ProduceStatus.REJECTED);
         }
 

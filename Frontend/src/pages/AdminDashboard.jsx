@@ -4,12 +4,14 @@ import Sidebar from '../components/Sidebar.jsx';
 import { getAllInspections } from '../services/inspectionService';
 import { getAllProduce } from '../services/produceService';
 import { getAllOrders } from '../services/procurementService';
+import API from '../api/api';
 import '../styles.css';
 
 const AdminDashboard = () => {
   const [produces, setProduces] = useState([]);
   const [inspections, setInspections] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
 
@@ -20,14 +22,16 @@ const AdminDashboard = () => {
   const fetchAllData = async () => {
     setLoading(true);
     try {
-      const [producesData, inspectionsData, ordersData] = await Promise.all([
+      const [producesData, inspectionsData, ordersData, inventoryData] = await Promise.all([
         getAllProduce().catch(() => []),
         getAllInspections().catch(() => []),
         getAllOrders().catch(() => []),
+        API.get('/inventory').then(r => r.data).catch(() => []),
       ]);
       setProduces(producesData || []);
       setInspections(inspectionsData || []);
       setOrders(ordersData || []);
+      setInventory(inventoryData || []);
     } catch (error) {
       console.error('Failed to fetch data:', error);
     } finally {
@@ -287,6 +291,35 @@ const AdminDashboard = () => {
             </section>
           )}
 
+          {/* Inventory Tab */}
+          {activeTab === 'inventory' && (
+            <section className="section-card">
+              <h2>📦 Inventory Monitoring</h2>
+              {inventory.length > 0 ? (
+                <div className="data-table">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Category</th>
+                        <th>Total Quantity (Kg)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {inventory.map((item) => (
+                        <tr key={item.id}>
+                          <td>{item.category?.name}</td>
+                          <td>{item.totalQuantity?.toFixed(2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p>No inventory data yet. Inventory is updated after procurement orders are created.</p>
+              )}
+            </section>
+          )}
+
           {/* Tab Navigation */}
           <div className="tab-navigation">
             <button
@@ -312,6 +345,12 @@ const AdminDashboard = () => {
               onClick={() => setActiveTab('orders')}
             >
               🛒 Orders
+            </button>
+            <button
+              className={`tab-btn ${activeTab === 'inventory' ? 'active' : ''}`}
+              onClick={() => setActiveTab('inventory')}
+            >
+              📦 Inventory
             </button>
           </div>
         </div>
