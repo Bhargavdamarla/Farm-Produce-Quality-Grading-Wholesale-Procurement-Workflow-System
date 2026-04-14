@@ -38,4 +38,12 @@ public class ProduceService {
     public List<FarmProduce> getPendingInspection() {
         return produceRepository.findByStatus(ProduceStatus.PENDING_INSPECTION);
     }
+
+    public List<FarmProduce> getAllProduce() {
+        return produceRepository.findAll();
+    }
+
+    public List<FarmProduce> getProduceByFarmerId(Long farmerId) {
+        return produceRepository.findByFarmerId(farmerId);
+    }
 }

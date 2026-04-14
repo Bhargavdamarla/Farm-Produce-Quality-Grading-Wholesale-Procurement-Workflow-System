@@ -9,13 +9,25 @@ import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping("/api/procurements")
+@RequestMapping("/api/procurement")
 public class ProcurementController {
     @Autowired
     private ProcurementService procurementService;
+    
+    @Autowired
+    private com.guvi.procurement.repositories.ProcurementOrderRepository orderRepository;
 
     @PostMapping
-    public ResponseEntity<ProcurementOrder> procureProduce(@RequestBody ProcurementRequest request) {
-        return ResponseEntity.ok(procurementService.procureProduce(request));
+    public ResponseEntity<?> procureProduce(@RequestBody ProcurementRequest request) {
+        try {
+            return ResponseEntity.ok(procurementService.procureProduce(request));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", e.getMessage()));
+        }
+    }
+
+    @GetMapping
+    public ResponseEntity<java.util.List<ProcurementOrder>> getAllProcurements() {
+        return ResponseEntity.ok(orderRepository.findAll());
     }
 }

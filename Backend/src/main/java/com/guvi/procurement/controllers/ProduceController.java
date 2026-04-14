@@ -21,8 +21,18 @@ public class ProduceController {
         return ResponseEntity.ok(produceService.submitProduce(request));
     }
 
+    @GetMapping
+    public ResponseEntity<List<FarmProduce>> getAllProduce() {
+        return ResponseEntity.ok(produceService.getAllProduce());
+    }
+
     @GetMapping("/pending")
     public ResponseEntity<List<FarmProduce>> getPendingProduce() {
         return ResponseEntity.ok(produceService.getPendingInspection());
+    }
+
+    @GetMapping("/farmer/{farmerId}")
+    public ResponseEntity<List<FarmProduce>> getProduceByFarmer(@PathVariable Long farmerId) {
+        return ResponseEntity.ok(produceService.getProduceByFarmerId(farmerId));
     }
 }

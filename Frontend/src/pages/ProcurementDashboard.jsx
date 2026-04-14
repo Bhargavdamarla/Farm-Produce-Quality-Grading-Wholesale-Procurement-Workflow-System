@@ -1,57 +1,55 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar.jsx';
 import Sidebar from '../components/Sidebar.jsx';
 import ProcurementForm from '../forms/ProcurementForm.jsx';
-import { getAllOrders } from '../services/procurementService';
+import { getAllOrders, getGradedProduces } from '../services/procurementService';
 import '../styles.css';
 
 const ProcurementDashboard = () => {
   const [orders, setOrders] = useState([]);
+  const [availableProduce, setAvailableProduce] = useState([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState('ALL');
 
   useEffect(() => {
-    fetchOrders();
+    fetchDashboardData();
   }, []);
 
-  const fetchOrders = async () => {
+  const fetchDashboardData = async () => {
     setLoading(true);
     try {
-      const data = await getAllOrders();
-      setOrders(data || []);
+      const [ordersData, acceptedProduce] = await Promise.all([
+        getAllOrders(),
+        getGradedProduces(),
+      ]);
+
+      setOrders(ordersData || []);
+      setAvailableProduce(acceptedProduce || []);
     } catch (error) {
-      console.error('Failed to fetch orders:', error);
+      console.error('Failed to fetch procurement data:', error);
     } finally {
       setLoading(false);
     }
   };
 
+  const formatCurrency = (value) => `Rs ${Number(value || 0).toFixed(2)}`;
+
   const getStatusColor = (status) => {
     const colors = {
-      CREATED: '#3498DB',
-      APPROVED: '#2E86C1',
-      COMPLETED: '#27AE60',
-      CANCELLED: '#E74C3C',
+      PENDING: '#f59e0b',
+      APPROVED: '#2563eb',
+      COMPLETED: '#16a34a',
+      CANCELLED: '#dc2626',
     };
-    return colors[status] || '#95A5A6';
+
+    return colors[status] || '#64748b';
   };
 
-  const getStatusIcon = (status) => {
-    const icons = {
-      CREATED: '📝',
-      APPROVED: '✔️',
-      COMPLETED: '✅',
-      CANCELLED: '❌',
-    };
-    return icons[status] || '❓';
-  };
+  const filteredOrders =
+    filter === 'ALL' ? orders : orders.filter((order) => order.status === filter);
 
-  const filteredOrders = filter === 'ALL' 
-    ? orders 
-    : orders.filter(o => o.orderStatus === filter);
-
-  const totalProcuredValue = filteredOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
-  const totalQuantityOrdered = filteredOrders.reduce((sum, order) => sum + (order.procurementQuantity || 0), 0);
+  const totalValue = filteredOrders.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0);
+  const totalQuantity = filteredOrders.reduce((sum, order) => sum + Number(order.quantity || 0), 0);
 
   return (
     <div className="dashboard-container">
@@ -59,26 +57,66 @@ const ProcurementDashboard = () => {
       <div className="dashboard-content">
         <Sidebar userRole="PROCUREMENT_OFFICER" />
         <div className="main-content">
-          <div className="header-section">
-            <h1>🛒 Procurement Officer Dashboard</h1>
-            <p>Create and manage wholesale procurement orders</p>
+          <div id="dashboard" className="header-section">
+            <h1>Procurement Officer Dashboard</h1>
+            <p>Manage accepted produce, raise procurement orders, and track buying activity.</p>
           </div>
 
           <div className="dashboard-sections">
-            {/* Procurement Form */}
-            <section className="section-card">
-              <ProcurementForm onProcurementAdded={fetchOrders} />
+            <section id="order" className="section-card">
+              <ProcurementForm onProcurementAdded={fetchDashboardData} />
             </section>
 
-            {/* Orders Management */}
-            <section className="section-card">
-              <h2>📦 Procurement Orders</h2>
-              
+            <section id="graded" className="section-card">
+              <h2>Available Accepted Produce</h2>
+              {loading ? (
+                <div className="loading">Loading accepted produce...</div>
+              ) : availableProduce.length > 0 ? (
+                <div className="data-table">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Produce ID</th>
+                        <th>Category</th>
+                        <th>Farmer</th>
+                        <th>Quantity</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {availableProduce.map((produce) => (
+                        <tr key={produce.id}>
+                          <td>#{produce.id}</td>
+                          <td>{produce.category?.name || 'Unknown'}</td>
+                          <td>{produce.farmer?.name || 'Unknown'}</td>
+                          <td>{Number(produce.quantity || 0).toFixed(2)} KG</td>
+                          <td>
+                            <span
+                              className="status-badge"
+                              style={{ backgroundColor: getStatusColor(produce.status) }}
+                            >
+                              {produce.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="empty-state">
+                  <p>No accepted produce is ready for procurement.</p>
+                </div>
+              )}
+            </section>
+
+            <section id="orders" className="section-card">
+              <h2>Procurement History</h2>
               <div className="filter-section">
                 <label>Filter by Status:</label>
-                <select value={filter} onChange={(e) => setFilter(e.target.value)}>
+                <select value={filter} onChange={(event) => setFilter(event.target.value)}>
                   <option value="ALL">All Orders</option>
-                  <option value="CREATED">Created</option>
+                  <option value="PENDING">Pending</option>
                   <option value="APPROVED">Approved</option>
                   <option value="COMPLETED">Completed</option>
                   <option value="CANCELLED">Cancelled</option>
@@ -92,8 +130,9 @@ const ProcurementDashboard = () => {
                   <table>
                     <thead>
                       <tr>
+                        <th>Order ID</th>
                         <th>Produce</th>
-                        <th>Grade</th>
+                        <th>Officer</th>
                         <th>Quantity</th>
                         <th>Unit Price</th>
                         <th>Total Amount</th>
@@ -104,24 +143,23 @@ const ProcurementDashboard = () => {
                     <tbody>
                       {filteredOrders.map((order) => (
                         <tr key={order.id}>
-                          <td className="produce-name">{order.categoryName}</td>
-                          <td>
-                            <span className={`grade-badge grade-${order.grade?.toLowerCase()}`}>
-                              {order.grade}
-                            </span>
-                          </td>
-                          <td>{order.procurementQuantity} {order.unitType}</td>
-                          <td>₹ {parseFloat(order.unitPrice).toFixed(2)}</td>
-                          <td className="amount">₹ {parseFloat(order.totalAmount).toFixed(2)}</td>
+                          <td>#{order.id}</td>
+                          <td>{order.produce?.category?.name || 'Unknown'}</td>
+                          <td>{order.officer?.name || 'Unknown'}</td>
+                          <td>{Number(order.quantity || 0).toFixed(2)} KG</td>
+                          <td>{formatCurrency(order.unitPrice)}</td>
+                          <td>{formatCurrency(order.totalAmount)}</td>
                           <td>
                             <span
                               className="status-badge"
-                              style={{ backgroundColor: getStatusColor(order.orderStatus) }}
+                              style={{ backgroundColor: getStatusColor(order.status) }}
                             >
-                              {getStatusIcon(order.orderStatus)} {order.orderStatus}
+                              {order.status}
                             </span>
                           </td>
-                          <td>{new Date(order.orderDate).toLocaleDateString()}</td>
+                          <td>
+                            {order.orderDate ? new Date(order.orderDate).toLocaleDateString() : 'N/A'}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -129,31 +167,29 @@ const ProcurementDashboard = () => {
                 </div>
               ) : (
                 <div className="empty-state">
-                  <p>No orders found</p>
-                  <p className="hint">Create your first procurement order using the form above</p>
+                  <p>No procurement orders found.</p>
                 </div>
               )}
             </section>
 
-            {/* Summary Stats */}
             <section className="section-card stats-section">
-              <h2>📊 Procurement Summary</h2>
+              <h2>Procurement Analytics</h2>
               <div className="stats-grid">
                 <div className="stat-item">
                   <div className="stat-number">{filteredOrders.length}</div>
-                  <div className="stat-label">Total Orders</div>
+                  <div className="stat-label">Orders</div>
                 </div>
                 <div className="stat-item">
-                  <div className="stat-number">{orders.filter(o => o.orderStatus === 'COMPLETED').length}</div>
-                  <div className="stat-label">Completed</div>
+                  <div className="stat-number">{availableProduce.length}</div>
+                  <div className="stat-label">Accepted Produce Lots</div>
                 </div>
                 <div className="stat-item">
-                  <div className="stat-number">{totalQuantityOrdered.toFixed(2)}</div>
-                  <div className="stat-label">Total Qty Ordered</div>
+                  <div className="stat-number">{totalQuantity.toFixed(2)}</div>
+                  <div className="stat-label">Total Quantity Procured</div>
                 </div>
                 <div className="stat-item">
-                  <div className="stat-number">₹ {totalProcuredValue.toFixed(0)}</div>
-                  <div className="stat-label">Total Value</div>
+                  <div className="stat-number">{formatCurrency(totalValue)}</div>
+                  <div className="stat-label">Procurement Value</div>
                 </div>
               </div>
             </section>

@@ -1,111 +1,100 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createOrder, getGradedProduces } from '../services/procurementService';
 import '../styles.css';
 
 function ProcurementForm({ onProcurementAdded }) {
   const [form, setForm] = useState({
     produceId: '',
-    procurementQuantity: '',
-    unitPrice: '',
+    priceAgreed: '',
   });
-
-  const [gradedProduces, setGradedProduces] = useState([]);
+  const [acceptedProduce, setAcceptedProduce] = useState([]);
+  const [selectedProduce, setSelectedProduce] = useState(null);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
-  const [totalAmount, setTotalAmount] = useState(0);
-  const [selectedProduce, setSelectedProduce] = useState(null);
 
   useEffect(() => {
-    fetchGradedProduces();
+    fetchAcceptedProduce();
   }, []);
 
-  const fetchGradedProduces = async () => {
+  const fetchAcceptedProduce = async () => {
     try {
       const data = await getGradedProduces();
-      setGradedProduces(data);
+      setAcceptedProduce(data || []);
     } catch (error) {
-      console.error('Failed to fetch graded produces:', error);
+      console.error('Failed to fetch accepted produce:', error);
     }
   };
 
-  const calculateTotal = (quantity, price) => {
-    return (parseFloat(quantity) * parseFloat(price)).toFixed(2);
+  const formatCurrency = (value) => `Rs ${Number(value || 0).toFixed(2)}`;
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setForm((previous) => ({ ...previous, [name]: value }));
+
+    if (name === 'produceId') {
+      const match = acceptedProduce.find((produce) => String(produce.id) === value);
+      setSelectedProduce(match || null);
+    }
+
+    if (errors[name]) {
+      setErrors((previous) => ({ ...previous, [name]: '' }));
+    }
   };
 
   const validateForm = () => {
-    const newErrors = {};
-    if (!form.produceId) newErrors.produceId = 'Please select produce';
-    if (!form.procurementQuantity || form.procurementQuantity <= 0) {
-      newErrors.procurementQuantity = 'Quantity must be greater than 0';
+    const nextErrors = {};
+
+    if (!form.produceId) {
+      nextErrors.produceId = 'Please choose an accepted produce lot';
     }
-    if (selectedProduce && form.procurementQuantity > selectedProduce.availableQuantity) {
-      newErrors.procurementQuantity = `Cannot exceed available: ${selectedProduce.availableQuantity} ${selectedProduce.unitType}`;
+
+    if (!form.priceAgreed || Number(form.priceAgreed) <= 0) {
+      nextErrors.priceAgreed = 'Please enter a valid agreed price';
     }
-    if (!form.unitPrice || form.unitPrice <= 0) {
-      newErrors.unitPrice = 'Price must be greater than 0';
-    }
-    return newErrors;
+
+    return nextErrors;
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
-    
-    if (name === 'produceId') {
-      const produce = gradedProduces.find(p => p.id === parseInt(value));
-      setSelectedProduce(produce || null);
-    }
-    
-    if ((name === 'procurementQuantity' || name === 'unitPrice') && form.procurementQuantity && form.unitPrice) {
-      const total = calculateTotal(
-        name === 'procurementQuantity' ? value : form.procurementQuantity,
-        name === 'unitPrice' ? value : form.unitPrice
-      );
-      setTotalAmount(total);
-    }
-    
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
-  };
+  const estimatedTotal = selectedProduce
+    ? Number(selectedProduce.quantity || 0) * Number(form.priceAgreed || 0)
+    : 0;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setSuccess('');
-    
-    const newErrors = validateForm();
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+
+    const nextErrors = validateForm();
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
       return;
     }
 
     setLoading(true);
     try {
       await createOrder({
-        ...form,
-        procurementQuantity: parseFloat(form.procurementQuantity),
-        unitPrice: parseFloat(form.unitPrice),
-        totalAmount: parseFloat(totalAmount),
+        produceId: Number(form.produceId),
+        priceAgreed: Number(form.priceAgreed),
       });
-      
-      setSuccess('✓ Procurement order created successfully!');
+
+      setSuccess('Procurement order created successfully.');
       setForm({
         produceId: '',
-        procurementQuantity: '',
-        unitPrice: '',
+        priceAgreed: '',
       });
       setSelectedProduce(null);
-      setTotalAmount(0);
-      
+      setErrors({});
+
       if (onProcurementAdded) {
-        onProcurementAdded(form);
+        onProcurementAdded();
       }
-      
-      fetchGradedProduces();
+
+      await fetchAcceptedProduce();
       setTimeout(() => setSuccess(''), 3000);
     } catch (error) {
-      setErrors({ submit: error.response?.data?.message || 'Failed to create order' });
+      setErrors({
+        submit: error.response?.data?.message || 'Failed to create procurement order',
+      });
     } finally {
       setLoading(false);
     }
@@ -113,28 +102,28 @@ function ProcurementForm({ onProcurementAdded }) {
 
   return (
     <form onSubmit={handleSubmit} className="form-container">
-      <h3>Create Procurement Order</h3>
-      
+      <h3>Procurement Order Form</h3>
+
       {success && <div className="success-message">{success}</div>}
       {errors.submit && <div className="error-message">{errors.submit}</div>}
 
       <div className="form-group">
-        <label>Select Graded Produce *</label>
+        <label>Select Accepted Produce *</label>
         <select
           name="produceId"
           value={form.produceId}
           onChange={handleChange}
           className={errors.produceId ? 'input-error' : ''}
         >
-          <option value="">-- Choose Graded Produce --</option>
-          {gradedProduces.length > 0 ? (
-            gradedProduces.map(produce => (
+          <option value="">-- Choose Accepted Produce --</option>
+          {acceptedProduce.length > 0 ? (
+            acceptedProduce.map((produce) => (
               <option key={produce.id} value={produce.id}>
-                {produce.categoryName} - Grade {produce.grade} (Available: {produce.availableQuantity} {produce.unitType})
+                Produce #{produce.id} - {produce.category?.name || 'Unknown'} - {produce.quantity} KG
               </option>
             ))
           ) : (
-            <option disabled>No graded produce available</option>
+            <option disabled>No accepted produce is available</option>
           )}
         </select>
         {errors.produceId && <span className="error-text">{errors.produceId}</span>}
@@ -143,67 +132,51 @@ function ProcurementForm({ onProcurementAdded }) {
       {selectedProduce && (
         <div className="produce-info">
           <div className="info-item">
-            <span>Category:</span> <strong>{selectedProduce.categoryName}</strong>
+            <span>Category</span>
+            <strong>{selectedProduce.category?.name || 'Unknown'}</strong>
           </div>
           <div className="info-item">
-            <span>Grade:</span> <strong className={`grade-${selectedProduce.grade.toLowerCase()}`}>Grade {selectedProduce.grade}</strong>
+            <span>Farmer</span>
+            <strong>{selectedProduce.farmer?.name || 'Unknown'}</strong>
           </div>
           <div className="info-item">
-            <span>Available Quantity:</span> <strong>{selectedProduce.availableQuantity} {selectedProduce.unitType}</strong>
+            <span>Quantity</span>
+            <strong>{Number(selectedProduce.quantity || 0).toFixed(2)} KG</strong>
           </div>
           <div className="info-item">
-            <span>Quality Score:</span> <strong>{selectedProduce.qualityScore}/100</strong>
+            <span>Status</span>
+            <strong>{selectedProduce.status}</strong>
           </div>
         </div>
       )}
 
       <div className="form-group">
-        <label>Procurement Quantity *</label>
+        <label>Agreed Price Per KG *</label>
         <input
           type="number"
-          name="procurementQuantity"
-          value={form.procurementQuantity}
+          name="priceAgreed"
+          value={form.priceAgreed}
           onChange={handleChange}
-          placeholder="Enter quantity"
+          placeholder="Enter agreed price"
           step="0.01"
           min="0"
-          max={selectedProduce ? selectedProduce.availableQuantity : undefined}
-          className={errors.procurementQuantity ? 'input-error' : ''}
+          className={errors.priceAgreed ? 'input-error' : ''}
         />
-        {errors.procurementQuantity && <span className="error-text">{errors.procurementQuantity}</span>}
+        {errors.priceAgreed && <span className="error-text">{errors.priceAgreed}</span>}
       </div>
 
-      <div className="form-group">
-        <label>Unit Price *</label>
-        <input
-          type="number"
-          name="unitPrice"
-          value={form.unitPrice}
-          onChange={handleChange}
-          placeholder="Enter price per unit"
-          step="0.01"
-          min="0"
-          className={errors.unitPrice ? 'input-error' : ''}
-        />
-        {errors.unitPrice && <span className="error-text">{errors.unitPrice}</span>}
-      </div>
-
-      {totalAmount > 0 && (
+      {selectedProduce && Number(form.priceAgreed || 0) > 0 && (
         <div className="total-amount-display">
-          <label>Total Amount</label>
-          <div className="total-value">₹ {totalAmount}</div>
+          <label>Estimated Order Value</label>
+          <div className="total-value">{formatCurrency(estimatedTotal)}</div>
           <div className="calculation">
-            {form.procurementQuantity} × ₹{form.unitPrice} = ₹{totalAmount}
+            {Number(selectedProduce.quantity || 0).toFixed(2)} KG x {formatCurrency(form.priceAgreed)}
           </div>
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="btn-primary"
-      >
-        {loading ? 'Creating Order...' : 'Create Order'}
+      <button type="submit" disabled={loading} className="btn-primary">
+        {loading ? 'Creating order...' : 'Create Procurement Order'}
       </button>
     </form>
   );

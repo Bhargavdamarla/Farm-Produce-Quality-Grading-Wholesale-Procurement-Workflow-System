@@ -77,14 +77,14 @@ const Signup = () => {
   return (
     <div className="login-container">
       <div className="login-wrapper">
-        <div className="login-box">
-          <div className="login-header">
+        <div className="login-box" style={{ maxWidth: "550px", width: "100%" }}>
+          <div className="login-header" style={{ marginBottom: "1.5rem" }}>
             <h1>🌾 Agricultural Procurement System</h1>
-            <p>Farm Produce Quality Grading &amp; Wholesale Procurement</p>
+            <p>Farm Produce Quality Grading & Wholesale Procurement</p>
           </div>
 
           <form onSubmit={handleSubmit} className="login-form">
-            <h2>Create Account</h2>
+            <h2 style={{ marginBottom: "1rem" }}>Create Account</h2>
 
             {generalError && (
               <div className="error-message"><strong>⚠️ {generalError}</strong></div>
@@ -93,37 +93,39 @@ const Signup = () => {
               <div className="success-message"><strong>{success}</strong></div>
             )}
 
-            <div className="form-group">
-              <label htmlFor="name">Full Name</label>
-              <input
-                id="name"
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="Enter your full name"
-                className={errors.name ? 'input-error' : ''}
-                disabled={loading}
-              />
-              {errors.name && <span className="error-text">{errors.name}</span>}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+              <div className="form-group" style={{ marginBottom: "1rem" }}>
+                <label htmlFor="name">Full Name</label>
+                <input
+                  id="name"
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="John Doe"
+                  className={errors.name ? 'input-error' : ''}
+                  disabled={loading}
+                />
+                {errors.name && <span className="error-text">{errors.name}</span>}
+              </div>
+
+              <div className="form-group" style={{ marginBottom: "1rem" }}>
+                <label htmlFor="signup-email">Email Address</label>
+                <input
+                  id="signup-email"
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="john@example.com"
+                  className={errors.email ? 'input-error' : ''}
+                  disabled={loading}
+                />
+                {errors.email && <span className="error-text">{errors.email}</span>}
+              </div>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="signup-email">Email Address</label>
-              <input
-                id="signup-email"
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Enter your email"
-                className={errors.email ? 'input-error' : ''}
-                disabled={loading}
-              />
-              {errors.email && <span className="error-text">{errors.email}</span>}
-            </div>
-
-            <div className="form-group">
+            <div className="form-group" style={{ marginBottom: "1rem" }}>
               <label htmlFor="phoneNumber">Phone Number</label>
               <input
                 id="phoneNumber"
@@ -131,39 +133,41 @@ const Signup = () => {
                 name="phoneNumber"
                 value={formData.phoneNumber}
                 onChange={handleChange}
-                placeholder="Enter your phone number"
+                placeholder="+91 9999999999"
                 disabled={loading}
               />
             </div>
 
-            <div className="form-group">
-              <label htmlFor="signup-password">Password</label>
-              <input
-                id="signup-password"
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Minimum 6 characters"
-                className={errors.password ? 'input-error' : ''}
-                disabled={loading}
-              />
-              {errors.password && <span className="error-text">{errors.password}</span>}
-            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+              <div className="form-group" style={{ marginBottom: "1rem" }}>
+                <label htmlFor="signup-password">Password</label>
+                <input
+                  id="signup-password"
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Min 6 chars"
+                  className={errors.password ? 'input-error' : ''}
+                  disabled={loading}
+                />
+                {errors.password && <span className="error-text">{errors.password}</span>}
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="confirmPassword">Confirm Password</label>
-              <input
-                id="confirmPassword"
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                placeholder="Re-enter your password"
-                className={errors.confirmPassword ? 'input-error' : ''}
-                disabled={loading}
-              />
-              {errors.confirmPassword && <span className="error-text">{errors.confirmPassword}</span>}
+              <div className="form-group" style={{ marginBottom: "1rem" }}>
+                <label htmlFor="confirmPassword">Confirm Password</label>
+                <input
+                  id="confirmPassword"
+                  type="password"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="Confirm"
+                  className={errors.confirmPassword ? 'input-error' : ''}
+                  disabled={loading}
+                />
+                {errors.confirmPassword && <span className="error-text">{errors.confirmPassword}</span>}
+              </div>
             </div>
 
             <div className="form-group">
@@ -181,19 +185,14 @@ const Signup = () => {
               </select>
             </div>
 
-            <button type="submit" className="btn-login" disabled={loading}>
+            <button type="submit" className="btn-login" disabled={loading} style={{ marginTop: "0.5rem" }}>
               {loading ? 'Creating Account...' : 'Sign Up'}
             </button>
 
-            <p style={{ textAlign: 'center', marginTop: '16px', color: '#666' }}>
-              Already have an account?{' '}
-              <Link to="/login" style={{ color: '#27ae60', fontWeight: '600' }}>Sign In</Link>
+            <p className="auth-switch-link">
+              Already have an account? <Link to="/login">Sign In</Link>
             </p>
           </form>
-
-          <div className="login-footer">
-            <p>© 2026 Agricultural Procurement System | GUVI Hackathon</p>
-          </div>
         </div>
       </div>
     </div>

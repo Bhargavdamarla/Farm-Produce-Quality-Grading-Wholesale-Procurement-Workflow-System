@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import './App.css';
 
 // Pages
 import Login from './pages/Login.jsx';
@@ -11,13 +10,23 @@ import ProcurementDashboard from './pages/ProcurementDashboard.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
 
 // Components
-import Navbar from './components/Navbar.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState(null);
   const [userName, setUserName] = useState('');
+
+  const getRouteForRole = (role) => {
+    const roleRoutes = {
+      FARMER: '/farmer',
+      QUALITY_INSPECTOR: '/inspector',
+      PROCUREMENT_OFFICER: '/procurement',
+      ADMIN: '/admin',
+    };
+
+    return roleRoutes[role] || '/login';
+  };
 
   // Check if user is logged in on component mount
   useEffect(() => {
@@ -57,17 +66,13 @@ function App() {
 
   return (
     <Router>
-      {isAuthenticated && (
-        <Navbar userName={userName} userRole={userRole} onLogout={handleLogout} />
-      )}
-      
       <Routes>
         {/* Public Routes */}
         <Route
           path="/login"
           element={
             isAuthenticated ? (
-              <Navigate to={`/${userRole.toLowerCase()}`} />
+              <Navigate to={getRouteForRole(userRole)} replace />
             ) : (
               <Login onLoginSuccess={handleLoginSuccess} />
             )
@@ -133,9 +138,9 @@ function App() {
           path="/"
           element={
             isAuthenticated ? (
-              <Navigate to={`/${userRole.toLowerCase()}`} />
+              <Navigate to={getRouteForRole(userRole)} replace />
             ) : (
-              <Navigate to="/login" />
+              <Navigate to="/login" replace />
             )
           }
         />

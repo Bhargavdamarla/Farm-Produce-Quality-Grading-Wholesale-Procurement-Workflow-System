@@ -3,11 +3,12 @@ import API from '../api/api';
 // Submit inspection result
 export const submitInspection = async (data) => {
   try {
+    const authData = JSON.parse(localStorage.getItem('authData') || '{}');
     const response = await API.post('/inspections', {
       produceId: data.produceId,
+      inspectorId: authData.id,
       qualityScore: data.qualityScore,
       remarks: data.remarks,
-      assignedGrade: data.assignedGrade,
     });
     return response.data;
   } catch (error) {
@@ -18,7 +19,7 @@ export const submitInspection = async (data) => {
 // Get pending inspections (assigned to current inspector)
 export const getPendingInspections = async () => {
   try {
-    const response = await API.get('/inspections/pending');
+    const response = await API.get('/produce/pending');
     return response.data;
   } catch (error) {
     throw error;

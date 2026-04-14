@@ -29,4 +29,10 @@ public class InventoryController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    // POST /api/inventory — Add or update inventory
+    @PostMapping
+    public ResponseEntity<ProduceInventory> saveInventory(@RequestBody ProduceInventory inventory) {
+        return ResponseEntity.ok(inventoryRepository.save(inventory));
+    }
 }

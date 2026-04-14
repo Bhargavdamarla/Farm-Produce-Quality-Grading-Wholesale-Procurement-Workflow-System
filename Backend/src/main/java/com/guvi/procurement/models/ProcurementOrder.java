@@ -23,4 +23,14 @@ public class ProcurementOrder {
     private Double unitPrice;
     private Double totalAmount; // quantity × unitPrice
     private LocalDateTime orderDate = LocalDateTime.now();
+
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status = OrderStatus.PENDING;
+
+    public enum OrderStatus {
+        PENDING,
+        APPROVED,
+        COMPLETED,
+        CANCELLED
+    }
 }

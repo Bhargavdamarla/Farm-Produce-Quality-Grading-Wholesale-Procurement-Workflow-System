@@ -3,9 +3,10 @@ import API from '../api/api';
 // Create new produce submission
 export const createProduce = async (data) => {
   try {
+    const authData = JSON.parse(localStorage.getItem('authData') || '{}');
     const response = await API.post('/produce', {
-      farmerId: 1, // Using hardcoded test user ID 1
-      categoryId: 1, // Using hardcoded category ID 1 
+      farmerId: authData.id || 1, 
+      categoryId: data.categoryId, 
       quantity: data.quantity
     });
     return response.data;
@@ -48,6 +49,14 @@ export const getProduceByStatus = async (status) => {
 export const getProduceHistory = async (farmerId) => {
   try {
     const response = await API.get(`/produce/history/${farmerId}`);
+    return response.data;
+  } catch (error) {
+  }
+};
+
+export const getPendingProduce = async () => {
+  try {
+    const response = await API.get('/produce/pending');
     return response.data;
   } catch (error) {
     throw error;

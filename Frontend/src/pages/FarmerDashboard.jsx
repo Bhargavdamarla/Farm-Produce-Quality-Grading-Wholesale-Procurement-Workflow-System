@@ -32,27 +32,27 @@ const FarmerDashboard = () => {
 
   const getStatusColor = (status) => {
     const colors = {
-      SUBMITTED: '#FFA500',
-      UNDER_INSPECTION: '#3498DB',
-      GRADED: '#27AE60',
+      PENDING_INSPECTION: '#FFA500',
+      ACCEPTED: '#27AE60',
       REJECTED: '#E74C3C',
+      PROCURED: '#3498DB',
     };
     return colors[status] || '#95A5A6';
   };
 
   const getStatusIcon = (status) => {
     const icons = {
-      SUBMITTED: '📤',
-      UNDER_INSPECTION: '🔍',
-      GRADED: '✅',
+      PENDING_INSPECTION: '🔍',
+      ACCEPTED: '✅',
       REJECTED: '❌',
+      PROCURED: '🛒',
     };
     return icons[status] || '📦';
   };
 
   const filteredProduces = filter === 'ALL' 
     ? produces 
-    : produces.filter(p => p.produceStatus === filter);
+    : produces.filter(p => p.status === filter);
 
   return (
     <div className="dashboard-container">
@@ -79,10 +79,10 @@ const FarmerDashboard = () => {
                 <label>Filter by Status:</label>
                 <select value={filter} onChange={(e) => setFilter(e.target.value)}>
                   <option value="ALL">All Status</option>
-                  <option value="SUBMITTED">Submitted</option>
-                  <option value="UNDER_INSPECTION">Under Inspection</option>
-                  <option value="GRADED">Graded</option>
+                  <option value="PENDING_INSPECTION">Pending Inspection</option>
+                  <option value="ACCEPTED">Accepted / Graded</option>
                   <option value="REJECTED">Rejected</option>
+                  <option value="PROCURED">Procured</option>
                 </select>
               </div>
 
@@ -94,29 +94,25 @@ const FarmerDashboard = () => {
                     <thead>
                       <tr>
                         <th>Category</th>
-                        <th>Quantity</th>
-                        <th>Unit</th>
-                        <th>Harvest Date</th>
+                        <th>Quantity (KG)</th>
                         <th>Status</th>
-                        <th>Submitted</th>
+                        <th>Submission Date</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredProduces.map((produce) => (
                         <tr key={produce.id}>
-                          <td className="category">{produce.categoryName}</td>
+                          <td className="category">{produce.category ? produce.category.name : 'Unknown'}</td>
                           <td>{produce.quantity}</td>
-                          <td>{produce.unitType}</td>
-                          <td>{new Date(produce.harvestDate).toLocaleDateString()}</td>
                           <td>
                             <span
                               className="status-badge"
-                              style={{ backgroundColor: getStatusColor(produce.produceStatus) }}
+                              style={{ backgroundColor: getStatusColor(produce.status) }}
                             >
-                              {getStatusIcon(produce.produceStatus)} {produce.produceStatus}
+                              {getStatusIcon(produce.status)} {(produce.status || 'UNKNOWN').replace('_', ' ')}
                             </span>
                           </td>
-                          <td>{new Date(produce.createdAt).toLocaleDateString()}</td>
+                          <td>{produce.submissionDate ? new Date(produce.submissionDate).toLocaleDateString() : 'N/A'}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -139,15 +135,15 @@ const FarmerDashboard = () => {
                   <div className="stat-label">Total Submissions</div>
                 </div>
                 <div className="stat-item">
-                  <div className="stat-number">{produces.filter(p => p.produceStatus === 'GRADED').length}</div>
-                  <div className="stat-label">Graded</div>
+                  <div className="stat-number">{produces.filter(p => p.status === 'ACCEPTED').length}</div>
+                  <div className="stat-label">Accepted</div>
                 </div>
                 <div className="stat-item">
-                  <div className="stat-number">{produces.filter(p => p.produceStatus === 'UNDER_INSPECTION').length}</div>
-                  <div className="stat-label">Under Inspection</div>
+                  <div className="stat-number">{produces.filter(p => p.status === 'PENDING_INSPECTION').length}</div>
+                  <div className="stat-label">Pending</div>
                 </div>
                 <div className="stat-item">
-                  <div className="stat-number">{produces.filter(p => p.produceStatus === 'REJECTED').length}</div>
+                  <div className="stat-number">{produces.filter(p => p.status === 'REJECTED').length}</div>
                   <div className="stat-label">Rejected</div>
                 </div>
               </div>

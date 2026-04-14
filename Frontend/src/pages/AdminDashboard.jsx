@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar.jsx';
 import Sidebar from '../components/Sidebar.jsx';
-import { getAllInspections } from '../services/inspectionService';
-import { getAllProduce } from '../services/produceService';
-import { getAllOrders } from '../services/procurementService';
 import API from '../api/api';
+import { getAllInspections } from '../services/inspectionService';
+import { getAllOrders } from '../services/procurementService';
+import { getAllProduce } from '../services/produceService';
 import '../styles.css';
 
 const AdminDashboard = () => {
@@ -13,10 +13,28 @@ const AdminDashboard = () => {
   const [orders, setOrders] = useState([]);
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('produce');
+
+  const syncTabWithHash = () => {
+    const hash = window.location.hash.replace('#', '');
+    const validTabs = ['produce', 'inspection', 'procurement', 'inventory'];
+
+    if (validTabs.includes(hash)) {
+      setActiveTab(hash);
+    }
+  };
 
   useEffect(() => {
     fetchAllData();
+  }, []);
+
+  useEffect(() => {
+    syncTabWithHash();
+    window.addEventListener('hashchange', syncTabWithHash);
+
+    return () => {
+      window.removeEventListener('hashchange', syncTabWithHash);
+    };
   }, []);
 
   const fetchAllData = async () => {
@@ -26,46 +44,55 @@ const AdminDashboard = () => {
         getAllProduce().catch(() => []),
         getAllInspections().catch(() => []),
         getAllOrders().catch(() => []),
-        API.get('/inventory').then(r => r.data).catch(() => []),
+        API.get('/inventory').then((response) => response.data).catch(() => []),
       ]);
+
       setProduces(producesData || []);
       setInspections(inspectionsData || []);
       setOrders(ordersData || []);
       setInventory(inventoryData || []);
     } catch (error) {
-      console.error('Failed to fetch data:', error);
+      console.error('Failed to fetch admin dashboard data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const getStatusIcon = (status) => {
-    const icons = {
-      SUBMITTED: '📤',
-      UNDER_INSPECTION: '🔍',
-      GRADED: '✅',
-      REJECTED: '❌',
-      ASSIGNED: '📋',
-      INSPECTED: '🔍',
-      APPROVED: '✔️',
-      COMPLETED: '✅',
-      CREATED: '📝',
-      CANCELLED: '❌',
-    };
-    return icons[status] || '❓';
+  const formatCurrency = (value) => `Rs ${Number(value || 0).toFixed(2)}`;
+  const formatDate = (value) => (value ? new Date(value).toLocaleDateString() : 'N/A');
+  const deriveGrade = (score) => {
+    const numericScore = Number(score || 0);
+    if (numericScore >= 85) return 'Grade A';
+    if (numericScore >= 60) return 'Grade B';
+    return 'Grade C';
   };
 
-  const stats = {
-    totalProduces: produces.length,
-    submittedProduces: produces.filter(p => p.produceStatus === 'SUBMITTED').length,
-    gradedProduces: produces.filter(p => p.produceStatus === 'GRADED').length,
-    rejectedProduces: produces.filter(p => p.produceStatus === 'REJECTED').length,
-    totalInspections: inspections.length,
-    approvedInspections: inspections.filter(i => i.inspectionStatus === 'APPROVED').length,
-    rejectedInspections: inspections.filter(i => i.inspectionStatus === 'REJECTED').length,
-    totalOrders: orders.length,
-    completedOrders: orders.filter(o => o.orderStatus === 'COMPLETED').length,
-    totalProcuredValue: orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0),
+  const produceStats = {
+    total: produces.length,
+    pending: produces.filter((produce) => produce.status === 'PENDING_INSPECTION').length,
+    accepted: produces.filter((produce) => produce.status === 'ACCEPTED').length,
+    rejected: produces.filter((produce) => produce.status === 'REJECTED').length,
+    procured: produces.filter((produce) => produce.status === 'PROCURED').length,
+  };
+
+  const inspectionStats = {
+    total: inspections.length,
+    accepted: inspections.filter((inspection) => inspection.produce?.status === 'ACCEPTED').length,
+    rejected: inspections.filter((inspection) => inspection.produce?.status === 'REJECTED').length,
+    inspected: inspections.filter((inspection) => inspection.status === 'INSPECTED').length,
+  };
+
+  const procurementStats = {
+    total: orders.length,
+    pending: orders.filter((order) => order.status === 'PENDING').length,
+    completed: orders.filter((order) => order.status === 'COMPLETED').length,
+    quantity: orders.reduce((sum, order) => sum + Number(order.quantity || 0), 0),
+    value: orders.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0),
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    window.location.hash = tab;
   };
 
   return (
@@ -75,284 +102,310 @@ const AdminDashboard = () => {
         <Sidebar userRole="ADMIN" />
         <div className="main-content">
           <div className="header-section">
-            <h1>⚙️ Admin Dashboard</h1>
-            <p>System monitoring and analytics</p>
+            <h1>Admin Dashboard</h1>
+            <p>Track produce flow, inspection outcomes, procurement analytics, and warehouse inventory.</p>
           </div>
 
-          {/* Overview Tab */}
-          {activeTab === 'overview' && (
+          <div className="tab-navigation">
+            <button
+              className={`tab-btn ${activeTab === 'produce' ? 'active' : ''}`}
+              onClick={() => handleTabChange('produce')}
+            >
+              Produce Tracking Table
+            </button>
+            <button
+              className={`tab-btn ${activeTab === 'inspection' ? 'active' : ''}`}
+              onClick={() => handleTabChange('inspection')}
+            >
+              Inspection Status Dashboard
+            </button>
+            <button
+              className={`tab-btn ${activeTab === 'procurement' ? 'active' : ''}`}
+              onClick={() => handleTabChange('procurement')}
+            >
+              Procurement Analytics
+            </button>
+            <button
+              className={`tab-btn ${activeTab === 'inventory' ? 'active' : ''}`}
+              onClick={() => handleTabChange('inventory')}
+            >
+              Inventory Monitoring Panel
+            </button>
+          </div>
+
+          {activeTab === 'produce' && (
             <div className="dashboard-sections">
-              {/* Key Metrics */}
-              <section className="section-card metrics-section">
-                <h2>📊 Key Metrics</h2>
-                <div className="metrics-grid">
-                  <div className="metric-card">
-                    <div className="metric-icon">🌾</div>
-                    <div className="metric-content">
-                      <h3>Total Produces</h3>
-                      <p className="metric-value">{stats.totalProduces}</p>
-                    </div>
+              <section className="section-card stats-section">
+                <h2>Produce Tracking Summary</h2>
+                <div className="stats-grid">
+                  <div className="stat-item">
+                    <div className="stat-number">{produceStats.total}</div>
+                    <div className="stat-label">Total Lots</div>
                   </div>
-                  <div className="metric-card">
-                    <div className="metric-icon">✅</div>
-                    <div className="metric-content">
-                      <h3>Graded</h3>
-                      <p className="metric-value">{stats.gradedProduces}</p>
-                    </div>
+                  <div className="stat-item">
+                    <div className="stat-number">{produceStats.pending}</div>
+                    <div className="stat-label">Pending Inspection</div>
                   </div>
-                  <div className="metric-card">
-                    <div className="metric-icon">❌</div>
-                    <div className="metric-content">
-                      <h3>Rejected</h3>
-                      <p className="metric-value">{stats.rejectedProduces}</p>
-                    </div>
+                  <div className="stat-item">
+                    <div className="stat-number">{produceStats.accepted}</div>
+                    <div className="stat-label">Accepted</div>
                   </div>
-                  <div className="metric-card">
-                    <div className="metric-icon">🔍</div>
-                    <div className="metric-content">
-                      <h3>Inspections</h3>
-                      <p className="metric-value">{stats.totalInspections}</p>
-                    </div>
-                  </div>
-                  <div className="metric-card">
-                    <div className="metric-icon">🛒</div>
-                    <div className="metric-content">
-                      <h3>Orders</h3>
-                      <p className="metric-value">{stats.totalOrders}</p>
-                    </div>
-                  </div>
-                  <div className="metric-card">
-                    <div className="metric-icon">💰</div>
-                    <div className="metric-content">
-                      <h3>Total Value</h3>
-                      <p className="metric-value">₹ {stats.totalProcuredValue.toFixed(0)}</p>
-                    </div>
+                  <div className="stat-item">
+                    <div className="stat-number">{produceStats.procured}</div>
+                    <div className="stat-label">Procured</div>
                   </div>
                 </div>
               </section>
 
-              {/* Network Diagram */}
               <section className="section-card">
-                <h2>🔄 Workflow Status</h2>
-                <div className="workflow-diagram">
-                  <div className="workflow-step">
-                    <div className="step-number">1</div>
-                    <div className="step-content">
-                      <h4>Produce Submission</h4>
-                      <p>{stats.submittedProduces} Submitted</p>
-                    </div>
-                  </div>
-                  <div className="workflow-arrow">→</div>
-                  <div className="workflow-step">
-                    <div className="step-number">2</div>
-                    <div className="step-content">
-                      <h4>Quality Inspection</h4>
-                      <p>{stats.approvedInspections} Approved</p>
-                    </div>
-                  </div>
-                  <div className="workflow-arrow">→</div>
-                  <div className="workflow-step">
-                    <div className="step-number">3</div>
-                    <div className="step-content">
-                      <h4>Procurement Order</h4>
-                      <p>{stats.completedOrders} Completed</p>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              {/* Recent Activities */}
-              <section className="section-card">
-                <h2>📋 Recent Productions</h2>
+                <h2>Produce Tracking Table</h2>
                 {loading ? (
-                  <div className="loading">Loading...</div>
+                  <div className="loading">Loading produce records...</div>
                 ) : produces.length > 0 ? (
-                  <div className="activity-list">
-                    {produces.slice(0, 10).map((produce) => (
-                      <div key={produce.id} className="activity-item">
-                        <span className="activity-icon">{getStatusIcon(produce.produceStatus)}</span>
-                        <div className="activity-content">
-                          <h4>{produce.categoryName}</h4>
-                          <p>{produce.quantity} {produce.unitType} • {produce.produceStatus}</p>
-                          <small>{new Date(produce.createdAt).toLocaleDateString()}</small>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="data-table">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Farmer</th>
+                          <th>Category</th>
+                          <th>Quantity</th>
+                          <th>Status</th>
+                          <th>Submitted</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {produces.map((produce) => (
+                          <tr key={produce.id}>
+                            <td>#{produce.id}</td>
+                            <td>{produce.farmer?.name || 'Unknown'}</td>
+                            <td>{produce.category?.name || 'Unknown'}</td>
+                            <td>{Number(produce.quantity || 0).toFixed(2)} KG</td>
+                            <td><span className="status-badge">{produce.status}</span></td>
+                            <td>{formatDate(produce.submissionDate)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 ) : (
-                  <p>No produce data available</p>
+                  <div className="empty-state">
+                    <p>No produce records available.</p>
+                  </div>
                 )}
               </section>
             </div>
           )}
 
-          {/* Produce Tab */}
-          {activeTab === 'produce' && (
-            <section className="section-card">
-              <h2>🌾 All Produces</h2>
-              {produces.length > 0 ? (
-                <div className="data-table">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Category</th>
-                        <th>Quantity</th>
-                        <th>Unit</th>
-                        <th>Status</th>
-                        <th>Submitted</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {produces.map((p) => (
-                        <tr key={p.id}>
-                          <td>{p.categoryName}</td>
-                          <td>{p.quantity}</td>
-                          <td>{p.unitType}</td>
-                          <td><span className="status-badge">{getStatusIcon(p.produceStatus)} {p.produceStatus}</span></td>
-                          <td>{new Date(p.createdAt).toLocaleDateString()}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <p>No produce data</p>
-              )}
-            </section>
-          )}
-
-          {/* Inspection Tab */}
           {activeTab === 'inspection' && (
-            <section className="section-card">
-              <h2>🔍 All Inspections</h2>
-              {inspections.length > 0 ? (
-                <div className="data-table">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Produce</th>
-                        <th>Score</th>
-                        <th>Grade</th>
-                        <th>Status</th>
-                        <th>Date</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {inspections.map((i) => (
-                        <tr key={i.id}>
-                          <td>{i.produceCategory}</td>
-                          <td>{i.qualityScore}</td>
-                          <td>{i.assignedGrade}</td>
-                          <td><span className="status-badge">{getStatusIcon(i.inspectionStatus)} {i.inspectionStatus}</span></td>
-                          <td>{new Date(i.inspectionDate).toLocaleDateString()}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+            <div className="dashboard-sections">
+              <section className="section-card stats-section">
+                <h2>Inspection Status Dashboard</h2>
+                <div className="stats-grid">
+                  <div className="stat-item">
+                    <div className="stat-number">{inspectionStats.total}</div>
+                    <div className="stat-label">Inspections Logged</div>
+                  </div>
+                  <div className="stat-item">
+                    <div className="stat-number">{inspectionStats.inspected}</div>
+                    <div className="stat-label">Inspected</div>
+                  </div>
+                  <div className="stat-item">
+                    <div className="stat-number">{inspectionStats.accepted}</div>
+                    <div className="stat-label">Accepted Outcomes</div>
+                  </div>
+                  <div className="stat-item">
+                    <div className="stat-number">{inspectionStats.rejected}</div>
+                    <div className="stat-label">Rejected Outcomes</div>
+                  </div>
                 </div>
-              ) : (
-                <p>No inspection data</p>
-              )}
-            </section>
+              </section>
+
+              <section className="section-card">
+                <h2>Inspection Status Dashboard</h2>
+                {loading ? (
+                  <div className="loading">Loading inspection records...</div>
+                ) : inspections.length > 0 ? (
+                  <div className="data-table">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Produce</th>
+                          <th>Inspector</th>
+                          <th>Score</th>
+                          <th>Derived Grade</th>
+                          <th>Result</th>
+                          <th>Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {inspections.map((inspection) => (
+                          <tr key={inspection.id}>
+                            <td>#{inspection.id}</td>
+                            <td>{inspection.produce?.category?.name || 'Unknown'}</td>
+                            <td>{inspection.inspector?.name || 'Unknown'}</td>
+                            <td>{Number(inspection.qualityScore || 0).toFixed(0)}/100</td>
+                            <td>
+                              <span
+                                className={`grade-badge ${
+                                  Number(inspection.qualityScore || 0) >= 85
+                                    ? 'grade-a'
+                                    : Number(inspection.qualityScore || 0) >= 60
+                                      ? 'grade-b'
+                                      : 'grade-c'
+                                }`}
+                              >
+                                {deriveGrade(inspection.qualityScore)}
+                              </span>
+                            </td>
+                            <td>
+                              <span className="status-badge">
+                                {inspection.produce?.status || inspection.status}
+                              </span>
+                            </td>
+                            <td>{formatDate(inspection.inspectionDate)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="empty-state">
+                    <p>No inspection records available.</p>
+                  </div>
+                )}
+              </section>
+            </div>
           )}
 
-          {/* Orders Tab */}
-          {activeTab === 'orders' && (
-            <section className="section-card">
-              <h2>🛒 All Orders</h2>
-              {orders.length > 0 ? (
-                <div className="data-table">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Produce</th>
-                        <th>Quantity</th>
-                        <th>Total Amount</th>
-                        <th>Status</th>
-                        <th>Date</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {orders.map((o) => (
-                        <tr key={o.id}>
-                          <td>{o.categoryName}</td>
-                          <td>{o.procurementQuantity} {o.unitType}</td>
-                          <td>₹ {parseFloat(o.totalAmount).toFixed(2)}</td>
-                          <td><span className="status-badge">{getStatusIcon(o.orderStatus)} {o.orderStatus}</span></td>
-                          <td>{new Date(o.orderDate).toLocaleDateString()}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+          {activeTab === 'procurement' && (
+            <div className="dashboard-sections">
+              <section className="section-card stats-section">
+                <h2>Procurement Analytics</h2>
+                <div className="stats-grid">
+                  <div className="stat-item">
+                    <div className="stat-number">{procurementStats.total}</div>
+                    <div className="stat-label">Orders Raised</div>
+                  </div>
+                  <div className="stat-item">
+                    <div className="stat-number">{procurementStats.pending}</div>
+                    <div className="stat-label">Pending Orders</div>
+                  </div>
+                  <div className="stat-item">
+                    <div className="stat-number">{procurementStats.quantity.toFixed(2)}</div>
+                    <div className="stat-label">Quantity Procured</div>
+                  </div>
+                  <div className="stat-item">
+                    <div className="stat-number">{formatCurrency(procurementStats.value)}</div>
+                    <div className="stat-label">Procurement Value</div>
+                  </div>
                 </div>
-              ) : (
-                <p>No order data</p>
-              )}
-            </section>
+              </section>
+
+              <section className="section-card">
+                <h2>Procurement Analytics</h2>
+                {loading ? (
+                  <div className="loading">Loading procurement data...</div>
+                ) : orders.length > 0 ? (
+                  <div className="data-table">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Order ID</th>
+                          <th>Produce</th>
+                          <th>Officer</th>
+                          <th>Quantity</th>
+                          <th>Unit Price</th>
+                          <th>Total Amount</th>
+                          <th>Status</th>
+                          <th>Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {orders.map((order) => (
+                          <tr key={order.id}>
+                            <td>#{order.id}</td>
+                            <td>{order.produce?.category?.name || 'Unknown'}</td>
+                            <td>{order.officer?.name || 'Unknown'}</td>
+                            <td>{Number(order.quantity || 0).toFixed(2)} KG</td>
+                            <td>{formatCurrency(order.unitPrice)}</td>
+                            <td>{formatCurrency(order.totalAmount)}</td>
+                            <td><span className="status-badge">{order.status}</span></td>
+                            <td>{formatDate(order.orderDate)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="empty-state">
+                    <p>No procurement orders available.</p>
+                  </div>
+                )}
+              </section>
+            </div>
           )}
 
-          {/* Inventory Tab */}
           {activeTab === 'inventory' && (
-            <section className="section-card">
-              <h2>📦 Inventory Monitoring</h2>
-              {inventory.length > 0 ? (
-                <div className="data-table">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Category</th>
-                        <th>Total Quantity (Kg)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {inventory.map((item) => (
-                        <tr key={item.id}>
-                          <td>{item.category?.name}</td>
-                          <td>{item.totalQuantity?.toFixed(2)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+            <div className="dashboard-sections">
+              <section className="section-card stats-section">
+                <h2>Inventory Monitoring Panel</h2>
+                <div className="stats-grid">
+                  <div className="stat-item">
+                    <div className="stat-number">{inventory.length}</div>
+                    <div className="stat-label">Inventory Categories</div>
+                  </div>
+                  <div className="stat-item">
+                    <div className="stat-number">
+                      {inventory.reduce((sum, item) => sum + Number(item.totalQuantity || 0), 0).toFixed(2)}
+                    </div>
+                    <div className="stat-label">Total Stored Quantity</div>
+                  </div>
+                  <div className="stat-item">
+                    <div className="stat-number">{produceStats.procured}</div>
+                    <div className="stat-label">Procured Produce Lots</div>
+                  </div>
+                  <div className="stat-item">
+                    <div className="stat-number">{procurementStats.completed}</div>
+                    <div className="stat-label">Completed Orders</div>
+                  </div>
                 </div>
-              ) : (
-                <p>No inventory data yet. Inventory is updated after procurement orders are created.</p>
-              )}
-            </section>
-          )}
+              </section>
 
-          {/* Tab Navigation */}
-          <div className="tab-navigation">
-            <button
-              className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
-              onClick={() => setActiveTab('overview')}
-            >
-              📊 Overview
-            </button>
-            <button
-              className={`tab-btn ${activeTab === 'produce' ? 'active' : ''}`}
-              onClick={() => setActiveTab('produce')}
-            >
-              🌾 Produces
-            </button>
-            <button
-              className={`tab-btn ${activeTab === 'inspection' ? 'active' : ''}`}
-              onClick={() => setActiveTab('inspection')}
-            >
-              🔍 Inspections
-            </button>
-            <button
-              className={`tab-btn ${activeTab === 'orders' ? 'active' : ''}`}
-              onClick={() => setActiveTab('orders')}
-            >
-              🛒 Orders
-            </button>
-            <button
-              className={`tab-btn ${activeTab === 'inventory' ? 'active' : ''}`}
-              onClick={() => setActiveTab('inventory')}
-            >
-              📦 Inventory
-            </button>
-          </div>
+              <section className="section-card">
+                <h2>Inventory Monitoring Panel</h2>
+                {loading ? (
+                  <div className="loading">Loading inventory...</div>
+                ) : inventory.length > 0 ? (
+                  <div className="data-table">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Category</th>
+                          <th>Total Quantity</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {inventory.map((item) => (
+                          <tr key={item.id}>
+                            <td>#{item.id}</td>
+                            <td>{item.category?.name || 'Unknown'}</td>
+                            <td>{Number(item.totalQuantity || 0).toFixed(2)} KG</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="empty-state">
+                    <p>No inventory records yet. Inventory fills as procurement orders are created.</p>
+                  </div>
+                )}
+              </section>
+            </div>
+          )}
         </div>
       </div>
     </div>

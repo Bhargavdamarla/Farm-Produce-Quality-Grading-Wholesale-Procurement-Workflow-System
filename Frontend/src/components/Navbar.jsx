@@ -5,20 +5,32 @@ import '../styles.css';
 const Navbar = ({ userName, userRole, onLogout }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
+  const authData = JSON.parse(localStorage.getItem('authData') || '{}');
+
+  const resolvedUserName = userName || authData.name || '';
+  const resolvedUserRole = userRole || authData.role || '';
 
   const handleLogout = () => {
-    if (onLogout) onLogout();
-    navigate('/login');
+    localStorage.removeItem('authData');
+    sessionStorage.clear();
+
+    if (onLogout) {
+      onLogout();
+    }
+
+    navigate('/login', { replace: true });
+    window.location.replace('/login');
   };
 
   const getRoleBadge = () => {
     const roles = {
-      FARMER:              { label: 'Farmer',             icon: '🌾' },
-      QUALITY_INSPECTOR:   { label: 'Quality Inspector',  icon: '🔍' },
-      PROCUREMENT_OFFICER: { label: 'Procurement Officer',icon: '🛒' },
-      ADMIN:               { label: 'Admin',               icon: '⚙️' },
+      FARMER: { label: 'Farmer', icon: 'Farmer' },
+      QUALITY_INSPECTOR: { label: 'Quality Inspector', icon: 'Inspector' },
+      PROCUREMENT_OFFICER: { label: 'Procurement Officer', icon: 'Procurement' },
+      ADMIN: { label: 'Admin', icon: 'Admin' },
     };
-    return roles[userRole] || { label: userRole, icon: '👤' };
+
+    return roles[resolvedUserRole] || { label: resolvedUserRole || 'User', icon: 'User' };
   };
 
   const badge = getRoleBadge();
@@ -26,35 +38,33 @@ const Navbar = ({ userName, userRole, onLogout }) => {
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        {/* Brand */}
         <div className="navbar-brand">
           <div>
-            <h1>🌾 AgriProcure</h1>
-            <span className="tagline">Quality Grading & Procurement System</span>
+            <h1>AgriProcure</h1>
+            <span className="tagline">Quality Grading and Procurement System</span>
           </div>
         </div>
 
-        {/* Right side */}
         <div className="navbar-user">
-          {userName && (
+          {resolvedUserName && (
             <div className="user-info">
               <span className="user-role">{badge.icon} {badge.label}</span>
-              <span className="user-name">{userName}</span>
+              <span className="user-name">{resolvedUserName}</span>
             </div>
           )}
 
           <div className="dropdown">
             <button
               className="dropdown-btn"
-              onClick={() => setShowDropdown(!showDropdown)}
+              onClick={() => setShowDropdown((value) => !value)}
               aria-label="User menu"
             >
-              ⋮
+              Menu
             </button>
             {showDropdown && (
               <div className="dropdown-menu">
                 <button onClick={handleLogout} className="logout-btn">
-                  🚪 Logout
+                  Logout
                 </button>
               </div>
             )}

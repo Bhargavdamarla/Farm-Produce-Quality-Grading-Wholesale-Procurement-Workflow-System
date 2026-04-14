@@ -15,11 +15,15 @@ function ProduceForm({ onProduceAdded }) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
 
-  const categories = ['Wheat', 'Rice', 'Corn', 'Tomato', 'Potato'];
+  const categories = [
+    { id: 1, name: 'Grains (Wheat/Rice/Corn)' },
+    { id: 2, name: 'Vegetables (Tomato/Potato/etc)' },
+    { id: 3, name: 'Fruits (Apple/Banana/etc)' }
+  ];
 
   const validateForm = () => {
     const newErrors = {};
-    if (!form.categoryName) newErrors.categoryName = 'Category is required';
+    if (!form.categoryId) newErrors.categoryId = 'Category is required';
     if (!form.quantity || form.quantity <= 0) newErrors.quantity = 'Quantity must be greater than 0';
     if (!form.harvestDate) newErrors.harvestDate = 'Harvest date is required';
     return newErrors;
@@ -81,17 +85,17 @@ function ProduceForm({ onProduceAdded }) {
       <div className="form-group">
         <label>Produce Category *</label>
         <select
-          name="categoryName"
-          value={form.categoryName}
+          name="categoryId"
+          value={form.categoryId}
           onChange={handleChange}
-          className={errors.categoryName ? 'input-error' : ''}
+          className={errors.categoryId ? 'input-error' : ''}
         >
           <option value="">Select a category</option>
           {categories.map(cat => (
-            <option key={cat} value={cat}>{cat}</option>
+            <option key={cat.id} value={cat.id}>{cat.name}</option>
           ))}
         </select>
-        {errors.categoryName && <span className="error-text">{errors.categoryName}</span>}
+        {errors.categoryId && <span className="error-text">{errors.categoryId}</span>}
       </div>
 
       <div className="form-group">

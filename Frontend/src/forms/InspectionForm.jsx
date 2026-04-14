@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { submitInspection, getPendingInspections } from '../services/inspectionService';
+import React, { useEffect, useState } from 'react';
+import { getPendingInspections, submitInspection } from '../services/inspectionService';
 import '../styles.css';
 
 function InspectionForm({ onInspectionAdded }) {
@@ -8,89 +8,98 @@ function InspectionForm({ onInspectionAdded }) {
     qualityScore: '',
     remarks: '',
   });
-
-  const [pendingProduces, setPendingProduces] = useState([]);
+  const [pendingProduce, setPendingProduce] = useState([]);
+  const [selectedProduce, setSelectedProduce] = useState(null);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
-  const [autoGrade, setAutoGrade] = useState('');
 
   useEffect(() => {
-    fetchPendingInspections();
+    fetchPendingProduce();
   }, []);
 
-  const fetchPendingInspections = async () => {
+  const fetchPendingProduce = async () => {
     try {
       const data = await getPendingInspections();
-      setPendingProduces(data);
+      setPendingProduce(data || []);
     } catch (error) {
-      console.error('Failed to fetch pending inspections:', error);
+      console.error('Failed to fetch pending produce:', error);
     }
   };
 
-  const determineGrade = (score) => {
-    const s = parseFloat(score);
-    if (s >= 85) return 'Grade A (High Quality)';
-    if (s >= 60) return 'Grade B (Medium Quality)';
-    return 'Grade C (Low Quality)';
+  const getDerivedGrade = (score) => {
+    const numericScore = Number(score);
+
+    if (numericScore >= 85) return 'Grade A';
+    if (numericScore >= 60) return 'Grade B';
+    return 'Grade C';
   };
 
   const validateForm = () => {
-    const newErrors = {};
-    if (!form.produceId) newErrors.produceId = 'Please select produce';
-    if (!form.qualityScore || form.qualityScore < 0 || form.qualityScore > 100) {
-      newErrors.qualityScore = 'Score must be between 0-100';
+    const nextErrors = {};
+
+    if (!form.produceId) {
+      nextErrors.produceId = 'Please choose a produce item';
     }
-    return newErrors;
+
+    if (form.qualityScore === '' || Number(form.qualityScore) < 0 || Number(form.qualityScore) > 100) {
+      nextErrors.qualityScore = 'Quality score must be between 0 and 100';
+    }
+
+    return nextErrors;
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
-    
-    if (name === 'qualityScore' && value) {
-      setAutoGrade(determineGrade(value));
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setForm((previous) => ({ ...previous, [name]: value }));
+
+    if (name === 'produceId') {
+      const match = pendingProduce.find((produce) => String(produce.id) === value);
+      setSelectedProduce(match || null);
     }
-    
+
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+      setErrors((previous) => ({ ...previous, [name]: '' }));
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setSuccess('');
-    
-    const newErrors = validateForm();
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+
+    const nextErrors = validateForm();
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
       return;
     }
 
     setLoading(true);
     try {
       await submitInspection({
-        ...form,
-        qualityScore: parseFloat(form.qualityScore),
-        assignedGrade: autoGrade,
+        produceId: Number(form.produceId),
+        qualityScore: Number(form.qualityScore),
+        remarks: form.remarks,
       });
-      
-      setSuccess('✓ Inspection submitted successfully!');
+
+      setSuccess('Inspection submitted successfully.');
       setForm({
         produceId: '',
         qualityScore: '',
         remarks: '',
       });
-      setAutoGrade('');
-      
+      setSelectedProduce(null);
+      setErrors({});
+
       if (onInspectionAdded) {
-        onInspectionAdded(form);
+        onInspectionAdded();
       }
-      
-      fetchPendingInspections();
+
+      await fetchPendingProduce();
       setTimeout(() => setSuccess(''), 3000);
     } catch (error) {
-      setErrors({ submit: error.response?.data?.message || 'Failed to submit inspection' });
+      setErrors({
+        submit: error.response?.data?.message || 'Failed to submit inspection',
+      });
     } finally {
       setLoading(false);
     }
@@ -98,8 +107,8 @@ function InspectionForm({ onInspectionAdded }) {
 
   return (
     <form onSubmit={handleSubmit} className="form-container">
-      <h3>Quality Inspection Form</h3>
-      
+      <h3>Grade Submission Form</h3>
+
       {success && <div className="success-message">{success}</div>}
       {errors.submit && <div className="error-message">{errors.submit}</div>}
 
@@ -111,22 +120,47 @@ function InspectionForm({ onInspectionAdded }) {
           onChange={handleChange}
           className={errors.produceId ? 'input-error' : ''}
         >
-          <option value="">-- Choose Produce --</option>
-          {pendingProduces.length > 0 ? (
-            pendingProduces.map(produce => (
+          <option value="">-- Choose Pending Produce --</option>
+          {pendingProduce.length > 0 ? (
+            pendingProduce.map((produce) => (
               <option key={produce.id} value={produce.id}>
-                {produce.categoryName} - {produce.quantity} {produce.unitType} (Submitted: {produce.createdAt})
+                Produce #{produce.id} - {produce.category?.name || 'Unknown'} - {produce.quantity} KG
               </option>
             ))
           ) : (
-            <option disabled>No pending inspections</option>
+            <option disabled>No pending produce available</option>
           )}
         </select>
         {errors.produceId && <span className="error-text">{errors.produceId}</span>}
       </div>
 
+      {selectedProduce && (
+        <div className="produce-info">
+          <div className="info-item">
+            <span>Category</span>
+            <strong>{selectedProduce.category?.name || 'Unknown'}</strong>
+          </div>
+          <div className="info-item">
+            <span>Farmer</span>
+            <strong>{selectedProduce.farmer?.name || 'Unknown'}</strong>
+          </div>
+          <div className="info-item">
+            <span>Quantity</span>
+            <strong>{Number(selectedProduce.quantity || 0).toFixed(2)} KG</strong>
+          </div>
+          <div className="info-item">
+            <span>Submitted</span>
+            <strong>
+              {selectedProduce.submissionDate
+                ? new Date(selectedProduce.submissionDate).toLocaleString()
+                : 'N/A'}
+            </strong>
+          </div>
+        </div>
+      )}
+
       <div className="form-group">
-        <label>Quality Score (0-100) *</label>
+        <label>Quality Score (0 - 100) *</label>
         <div className="score-input-group">
           <input
             type="range"
@@ -142,18 +176,26 @@ function InspectionForm({ onInspectionAdded }) {
             name="qualityScore"
             value={form.qualityScore}
             onChange={handleChange}
-            placeholder="Enter score"
             min="0"
             max="100"
+            placeholder="Score"
             className={`score-input ${errors.qualityScore ? 'input-error' : ''}`}
           />
         </div>
         {errors.qualityScore && <span className="error-text">{errors.qualityScore}</span>}
-        {form.qualityScore && (
+        {form.qualityScore !== '' && (
           <div className="grade-display">
-            <strong>Assigned Grade: </strong>
-            <span className={`grade-badge ${form.qualityScore >= 85 ? 'grade-a' : form.qualityScore >= 60 ? 'grade-b' : 'grade-c'}`}>
-              {autoGrade}
+            <strong>Auto grade:</strong>{' '}
+            <span
+              className={`grade-badge ${
+                Number(form.qualityScore) >= 85
+                  ? 'grade-a'
+                  : Number(form.qualityScore) >= 60
+                    ? 'grade-b'
+                    : 'grade-c'
+              }`}
+            >
+              {getDerivedGrade(form.qualityScore)}
             </span>
           </div>
         )}
@@ -165,16 +207,12 @@ function InspectionForm({ onInspectionAdded }) {
           name="remarks"
           value={form.remarks}
           onChange={handleChange}
-          placeholder="Add any inspection notes or remarks"
+          placeholder="Add notes about freshness, damage, moisture, or market readiness"
           rows="4"
         />
       </div>
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="btn-primary"
-      >
+      <button type="submit" disabled={loading} className="btn-primary">
         {loading ? 'Submitting...' : 'Submit Inspection'}
       </button>
     </form>

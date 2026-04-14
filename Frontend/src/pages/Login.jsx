@@ -48,11 +48,15 @@ const Login = ({ onLoginSuccess }) => {
       onLoginSuccess(user);
       const roleRoutes = {
         FARMER: '/farmer',
-        INSPECTOR: '/inspector',
+        QUALITY_INSPECTOR: '/inspector',
         PROCUREMENT_OFFICER: '/procurement',
         ADMIN: '/admin',
       };
-      navigate(roleRoutes[user.role] || '/');
+      // Fallback mapped roles
+      let targetRoute = roleRoutes[user.role];
+      if (!targetRoute && user.role === 'INSPECTOR') targetRoute = '/inspector'; // hackathon legacy mapping
+
+      navigate(targetRoute || '/');
     } catch (error) {
       setGeneralError(error.response?.data?.message || 'Login failed. Please check your credentials.');
     } finally {
@@ -62,15 +66,16 @@ const Login = ({ onLoginSuccess }) => {
 
   return (
     <div className="login-container">
+      {/* Centered form */}
       <div className="login-wrapper">
         <div className="login-box">
           <div className="login-header">
             <h1>🌾 Agricultural Procurement System</h1>
-            <p>Farm Produce Quality Grading &amp; Wholesale Procurement</p>
+            <p>Farm Produce Quality Grading & Wholesale Procurement</p>
           </div>
 
           <form onSubmit={handleSubmit} className="login-form">
-            <h2>Sign In</h2>
+            <h2>Welcome Back</h2>
 
             {generalError && (
               <div className="error-message"><strong>⚠️ {generalError}</strong></div>
@@ -120,15 +125,10 @@ const Login = ({ onLoginSuccess }) => {
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
 
-            <p style={{ textAlign: 'center', marginTop: '16px', color: '#666' }}>
-              Don't have an account?{' '}
-              <Link to="/signup" style={{ color: '#27ae60', fontWeight: '600' }}>Sign Up</Link>
+            <p className="auth-switch-link">
+              Don't have an account? <Link to="/signup">Sign Up</Link>
             </p>
           </form>
-
-          <div className="login-footer">
-            <p>© 2026 Agricultural Procurement System | GUVI Hackathon</p>
-          </div>
         </div>
       </div>
     </div>

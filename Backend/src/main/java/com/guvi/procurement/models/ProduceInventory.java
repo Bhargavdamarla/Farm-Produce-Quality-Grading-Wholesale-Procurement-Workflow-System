@@ -15,4 +15,13 @@ public class ProduceInventory {
     private ProduceCategory category;
 
     private Double totalQuantity; // in Kg
+
+    @Enumerated(EnumType.STRING)
+    private InventoryStatus status = InventoryStatus.IN_STOCK;
+
+    public enum InventoryStatus {
+        IN_STOCK,
+        LOW_STOCK,
+        OUT_OF_STOCK
+    }
 }

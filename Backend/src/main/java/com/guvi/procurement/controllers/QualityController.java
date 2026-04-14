@@ -14,8 +14,16 @@ public class QualityController {
     @Autowired
     private QualityService qualityService;
 
+    @Autowired
+    private com.guvi.procurement.repositories.QualityInspectionRepository inspectionRepository;
+
     @PostMapping
     public ResponseEntity<QualityInspection> inspectProduce(@RequestBody GradeSubmitRequest request) {
         return ResponseEntity.ok(qualityService.inspectProduce(request));
+    }
+
+    @GetMapping
+    public ResponseEntity<java.util.List<QualityInspection>> getAllInspections() {
+        return ResponseEntity.ok(inspectionRepository.findAll());
     }
 }

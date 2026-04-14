@@ -10,6 +10,7 @@ import java.util.List;
 
 public interface FarmProduceRepository extends JpaRepository<FarmProduce, Long> {
     List<FarmProduce> findByStatus(ProduceStatus status);
+    List<FarmProduce> findByFarmerId(Long farmerId);
 
     @Query("SELECT new com.guvi.procurement.dto.ProduceReportDTO(" +
            "fp.id, f.name, c.name, fp.quantity, fp.status, qi.grade, qi.qualityScore, i.name) " +

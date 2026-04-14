@@ -6,32 +6,30 @@ const Sidebar = ({ userRole }) => {
 
   const getMenuItems = () => {
     const commonMenus = [
-      { label: 'Dashboard', href: '#dashboard', icon: '📊' },
+      { label: 'Dashboard', href: '#dashboard', icon: 'Overview' },
     ];
 
     const roleMenus = {
       FARMER: [
-        { label: 'Submit Produce', href: '#submit-produce', icon: '🌾' },
-        { label: 'My Produces', href: '#my-produces', icon: '📦' },
-        { label: 'Submission History', href: '#history', icon: '📋' },
+        { label: 'Submit Produce', href: '#submit-produce', icon: 'Produce' },
+        { label: 'My Produces', href: '#my-produces', icon: 'Lots' },
+        { label: 'Submission History', href: '#history', icon: 'History' },
       ],
       QUALITY_INSPECTOR: [
-        { label: 'Pending Inspections', href: '#pending', icon: '🔍' },
-        { label: 'Complete Inspection', href: '#inspect', icon: '✅' },
-        { label: 'Inspection History', href: '#history', icon: '📋' },
+        { label: 'Pending Inspections', href: '#pending', icon: 'Queue' },
+        { label: 'Complete Inspection', href: '#inspect', icon: 'Grade' },
+        { label: 'Inspection History', href: '#history', icon: 'History' },
       ],
       PROCUREMENT_OFFICER: [
-        { label: 'Available Produce', href: '#graded', icon: '📦' },
-        { label: 'Create Order', href: '#order', icon: '🛒' },
-        { label: 'Order History', href: '#orders', icon: '📋' },
+        { label: 'Available Produce', href: '#graded', icon: 'Pool' },
+        { label: 'Create Order', href: '#order', icon: 'Order' },
+        { label: 'Order History', href: '#orders', icon: 'History' },
       ],
       ADMIN: [
-        { label: 'Users Management', href: '#users', icon: '👥' },
-        { label: 'Produce Tracking', href: '#produces', icon: '🌾' },
-        { label: 'Inspections', href: '#inspections', icon: '🔍' },
-        { label: 'Procurement', href: '#procurement', icon: '🛒' },
-        { label: 'Inventory', href: '#inventory', icon: '📦' },
-        { label: 'Analytics', href: '#analytics', icon: '📊' },
+        { label: 'Produce Tracking', href: '#produce', icon: 'Produce' },
+        { label: 'Inspection Status', href: '#inspection', icon: 'Inspect' },
+        { label: 'Procurement Analytics', href: '#procurement', icon: 'Analytics' },
+        { label: 'Inventory Monitoring', href: '#inventory', icon: 'Inventory' },
       ],
     };
 
@@ -41,7 +39,7 @@ const Sidebar = ({ userRole }) => {
   return (
     <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
       <button className="toggle-btn" onClick={() => setIsCollapsed(!isCollapsed)}>
-        {isCollapsed ? '→' : '←'}
+        {isCollapsed ? '>' : '<'}
       </button>
 
       <div className="sidebar-header">
@@ -60,9 +58,7 @@ const Sidebar = ({ userRole }) => {
       </ul>
 
       <div className="sidebar-footer">
-        {!isCollapsed && (
-          <p className="version-info">v1.0 Beta</p>
-        )}
+        {!isCollapsed && <p className="version-info">v1.0 Beta</p>}
       </div>
     </aside>
   );

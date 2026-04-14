@@ -425,52 +425,59 @@ a { text-decoration: none; color: inherit; transition: var(--transition); }
 
 .btn-login { padding: 0.85rem; font-size: 0.9rem; margin-top: 0.75rem; }
 
-/* ==================== LOGIN/SIGNUP — SPLIT-SCREEN ==================== */
+/* ==================== LOGIN/SIGNUP ==================== */
 .login-container {
-  display: grid;
-  grid-template-columns: 55fr 45fr;
-  min-height: 100vh;
-  position: relative;
-}
-
-/* Left side: decorative panel (created via the .login-left if needed) */
-/* We use ::before on body-level to add left panel decoration */
-.login-container > *:first-child {
-  background:
-    radial-gradient(circle at 30% 35%, rgba(22,163,74,0.22) 0%, transparent 50%),
-    radial-gradient(circle at 75% 70%, rgba(59,130,246,0.1) 0%, transparent 45%),
-    linear-gradient(160deg, #060d1a 0%, #0a1a10 50%, #060d1a 100%);
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
-  padding: 4rem;
+  align-items: center;
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 20% 50%, rgba(22,163,74,0.12) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 20%, rgba(59,130,246,0.08) 0%, transparent 50%),
+              var(--bg-base);
+  padding: 2rem 1rem;
   position: relative;
   overflow: hidden;
 }
 
-.login-container > *:first-child::before {
-  content: '🌾';
-  font-size: 18rem;
+.login-container::before {
+  content: '';
   position: absolute;
-  opacity: 0.04;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  user-select: none;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(22,163,74,0.06) 0%, transparent 70%);
+  top: -200px; left: -100px;
+  animation: pulse 6s ease-in-out infinite;
+}
+
+.login-container::after {
+  content: '';
+  position: absolute;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(59,130,246,0.05) 0%, transparent 70%);
+  bottom: -100px; right: -100px;
+  animation: pulse 8s ease-in-out infinite reverse;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50%       { transform: scale(1.2); opacity: 1; }
 }
 
 .login-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem 5rem;
-  background: var(--bg-base);
-  border-left: 1px solid var(--border);
+  width: 100%;
+  max-width: 480px;
+  position: relative;
+  z-index: 2;
 }
 
-.login-box { width: 100%; max-width: 400px; }
+.login-box {
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  padding: 2.5rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,0.05);
+}
 
 .login-header { margin-bottom: 2.5rem; }
 
@@ -518,6 +525,24 @@ a { text-decoration: none; color: inherit; transition: var(--transition); }
   font-size: 0.72rem;
   color: var(--text-muted);
   text-align: center;
+}
+
+.auth-switch-link {
+  text-align: center;
+  margin-top: 1.25rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.auth-switch-link a {
+  color: #4ade80;
+  font-weight: 600;
+  margin-left: 0.25rem;
+}
+
+.auth-switch-link a:hover {
+  color: #22c55e;
+  text-decoration: underline;
 }
 
 /* ==================== TABLES ==================== */

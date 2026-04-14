@@ -3,11 +3,11 @@ import API from '../api/api';
 // Create procurement order
 export const createOrder = async (data) => {
   try {
+    const authData = JSON.parse(localStorage.getItem('authData') || '{}');
     const response = await API.post('/procurement', {
       produceId: data.produceId,
-      procurementQuantity: data.procurementQuantity,
-      unitPrice: data.unitPrice,
-      totalAmount: data.totalAmount,
+      officerId: authData.id,
+      priceAgreed: data.priceAgreed,
     });
     return response.data;
   } catch (error) {
@@ -18,8 +18,8 @@ export const createOrder = async (data) => {
 // Get graded produces available for procurement
 export const getGradedProduces = async () => {
   try {
-    const response = await API.get('/procurement/graded-produces');
-    return response.data;
+    const response = await API.get('/produce');
+    return (response.data || []).filter((produce) => produce.status === 'ACCEPTED');
   } catch (error) {
     throw error;
   }

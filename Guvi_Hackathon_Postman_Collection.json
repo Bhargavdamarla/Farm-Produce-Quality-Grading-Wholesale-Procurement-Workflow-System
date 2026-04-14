@@ -1,0 +1,171 @@
+{
+	"info": {
+		"_postman_id": "guvi-hackathon-api",
+		"name": "Guvi Hackathon - Procurement APIs",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "User APIs",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Farmer\",\n  \"email\": \"john@farmer.com\",\n  \"password\": \"password123\",\n  \"role\": \"FARMER\",\n  \"phoneNumber\": \"1234567890\"\n}"
+						},
+						"url": { "raw": "http://localhost:8080/api/users", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "users"] }
+					}
+				},
+				{
+					"name": "Get All Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "http://localhost:8080/api/users", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "users"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "Produce APIs",
+			"item": [
+				{
+					"name": "Submit Produce",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"farmerId\": 1,\n  \"categoryId\": 1,\n  \"quantity\": 500\n}"
+						},
+						"url": { "raw": "http://localhost:8080/api/produce", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "produce"] }
+					}
+				},
+				{
+					"name": "Get All Produce",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "http://localhost:8080/api/produce", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "produce"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "Inspection APIs",
+			"item": [
+				{
+					"name": "Submit Quality Inspection",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"produceId\": 1,\n  \"inspectorId\": 2,\n  \"qualityScore\": 85,\n  \"remarks\": \"Good quality apples\"\n}"
+						},
+						"url": { "raw": "http://localhost:8080/api/inspections", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "inspections"] }
+					}
+				},
+				{
+					"name": "Get All Inspections",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "http://localhost:8080/api/inspections", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "inspections"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "Grade APIs",
+			"item": [
+				{
+					"name": "Create Grade",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Grade A\",\n  \"description\": \"Premium Quality\",\n  \"premiumPercentage\": 20.0\n}"
+						},
+						"url": { "raw": "http://localhost:8080/api/grades", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "grades"] }
+					}
+				},
+				{
+					"name": "Get All Grades",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "http://localhost:8080/api/grades", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "grades"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "Procurement APIs",
+			"item": [
+				{
+					"name": "Create Procurement Order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"produceId\": 1,\n  \"officerId\": 3,\n  \"priceAgreed\": 120.5\n}"
+						},
+						"url": { "raw": "http://localhost:8080/api/procurement", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "procurement"] }
+					}
+				},
+				{
+					"name": "Get All Procurements",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "http://localhost:8080/api/procurement", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "procurement"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "Inventory APIs",
+			"item": [
+				{
+					"name": "Create/Update Inventory",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"category\": {\"id\": 1},\n  \"totalQuantity\": 1500.5\n}"
+						},
+						"url": { "raw": "http://localhost:8080/api/inventory", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "inventory"] }
+					}
+				},
+				{
+					"name": "Get All Inventory",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "http://localhost:8080/api/inventory", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "inventory"] }
+					}
+				}
+			]
+		}
+	]
+}
