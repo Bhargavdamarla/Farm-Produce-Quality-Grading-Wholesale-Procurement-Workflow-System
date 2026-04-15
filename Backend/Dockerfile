@@ -19,5 +19,5 @@ COPY --from=builder /build/target/*.jar app.jar
 # Default port (Render will override with PORT env var)
 EXPOSE 8080
 
-# Run with logging
-ENTRYPOINT ["java", "-jar", "-Dspring.profiles.active=default", "app.jar"]
+# Run the application
+CMD ["java", "-jar", "app.jar"]

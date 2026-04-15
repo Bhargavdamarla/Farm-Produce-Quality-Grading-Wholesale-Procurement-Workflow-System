@@ -27,27 +27,37 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         try {
-            // Initialize users if table is empty
-            if (userRepository.count() == 0) {
-                User farmer = new User();
-                farmer.setName("John Farmer");
-                farmer.setEmail("farmer@example.com");
-                farmer.setRole(Role.FARMER);
+            logger.info("Starting data initialization...");
 
-                User inspector = new User();
-                inspector.setName("Alice Inspector");
-                inspector.setEmail("inspector@example.com");
-                inspector.setRole(Role.QUALITY_INSPECTOR);
+            // Check database connection first
+            if (userRepository.count() >= 0) {  // Simple query to test connection
+                logger.info("Database connection successful");
 
-                User officer = new User();
-                officer.setName("Bob Officer");
-                officer.setEmail("officer@example.com");
-                officer.setRole(Role.PROCUREMENT_OFFICER);
+                // Initialize users if table is empty
+                if (userRepository.count() == 0) {
+                    logger.info("Initializing default users...");
 
-                // User IDs are predictable: 1, 2, 3
-                userRepository.saveAll(List.of(farmer, inspector, officer));
-                logger.info("Initialized default users");
-            }
+                    User farmer = new User();
+                    farmer.setName("John Farmer");
+                    farmer.setEmail("farmer@example.com");
+                    farmer.setRole(Role.FARMER);
+
+                    User inspector = new User();
+                    inspector.setName("Alice Inspector");
+                    inspector.setEmail("inspector@example.com");
+                    inspector.setRole(Role.QUALITY_INSPECTOR);
+
+                    User officer = new User();
+                    officer.setName("Bob Officer");
+                    officer.setEmail("officer@example.com");
+                    officer.setRole(Role.PROCUREMENT_OFFICER);
+
+                    // User IDs are predictable: 1, 2, 3
+                    userRepository.saveAll(List.of(farmer, inspector, officer));
+                    logger.info("Successfully initialized default users");
+                } else {
+                    logger.info("Users already exist, skipping initialization");
+                }
 
             // Initialize categories if table is empty
             if (categoryRepository.count() == 0) {
