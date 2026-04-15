@@ -16,7 +16,8 @@ WORKDIR /app
 # Copy the built JAR from builder stage
 COPY --from=builder /build/target/*.jar app.jar
 
-# Render listens on PORT env var (defaults to 8080)
+# Default port (Render will override with PORT env var)
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Run with logging
+ENTRYPOINT ["java", "-jar", "-Dspring.profiles.active=default", "app.jar"]
