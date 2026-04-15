@@ -59,20 +59,23 @@ public class DataInitializer implements CommandLineRunner {
                     logger.info("Users already exist, skipping initialization");
                 }
 
-            // Initialize categories if table is empty
-            if (categoryRepository.count() == 0) {
-                ProduceCategory grains = new ProduceCategory();
-                grains.setName("Grains");
+                // Initialize categories if table is empty
+                if (categoryRepository.count() == 0) {
+                    ProduceCategory grains = new ProduceCategory();
+                    grains.setName("Grains");
 
-                ProduceCategory vegetables = new ProduceCategory();
-                vegetables.setName("Vegetables");
+                    ProduceCategory vegetables = new ProduceCategory();
+                    vegetables.setName("Vegetables");
 
-                ProduceCategory fruits = new ProduceCategory();
-                fruits.setName("Fruits");
+                    ProduceCategory fruits = new ProduceCategory();
+                    fruits.setName("Fruits");
 
-                // Category IDs are predictable: 1, 2, 3
-                categoryRepository.saveAll(List.of(grains, vegetables, fruits));
-                logger.info("Initialized default categories");
+                    // Category IDs are predictable: 1, 2, 3
+                    categoryRepository.saveAll(List.of(grains, vegetables, fruits));
+                    logger.info("Initialized default categories");
+                } else {
+                    logger.info("Categories already exist, skipping initialization");
+                }
             }
         } catch (Exception e) {
             logger.warn("Data initialization failed (non-critical): {}", e.getMessage());
