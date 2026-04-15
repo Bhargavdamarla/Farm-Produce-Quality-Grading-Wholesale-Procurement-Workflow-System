@@ -52,7 +52,8 @@ run-backend.bat
 # Set environment variables first
 $env:DATABASE_URL = "jdbc:mysql://mysql-3ee21df4-saibhargavdamarla-3733.i.aivencloud.com:21469/defaultdb?ssl-mode=REQUIRED&allowPublicKeyRetrieval=true"
 $env:DATABASE_USERNAME = "avnadmin"
-$env:DATABASE_PASSWORD = "AVNS_nILG52yp8jnwCZj-xYU"
+# Replace YOUR_AIVEN_PASSWORD_HERE with your actual Aiven password
+$env:DATABASE_PASSWORD = "YOUR_AIVEN_PASSWORD_HERE"
 
 # Then run the backend
 cd Backend
@@ -64,7 +65,8 @@ Create a `.env` file in the root directory:
 ```
 DATABASE_URL=jdbc:mysql://mysql-3ee21df4-saibhargavdamarla-3733.i.aivencloud.com:21469/defaultdb?ssl-mode=REQUIRED&allowPublicKeyRetrieval=true
 DATABASE_USERNAME=avnadmin
-DATABASE_PASSWORD=AVNS_nILG52yp8jnwCZj-xYU
+# Replace YOUR_AIVEN_PASSWORD_HERE with your actual Aiven password
+DATABASE_PASSWORD=YOUR_AIVEN_PASSWORD_HERE
 ```
 
 ### Frontend Setup
