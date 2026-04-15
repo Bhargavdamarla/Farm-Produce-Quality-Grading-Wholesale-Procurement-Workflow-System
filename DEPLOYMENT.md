@@ -49,16 +49,28 @@ PORT=8080
 
 Test locally before deploying:
 
+### Option 1: Use Aiven Cloud (Recommended)
 ```bash
-cd Backend
+# Run this batch file to set Aiven environment variables
+set-aiven-env.bat
 
-# Set environment variables
-$env:DATABASE_URL = "jdbc:mysql://mysql-3ee21df4-saibhargavdamarla-3733.i.aivencloud.com:21469/defaultdb?serverSslMode=REQUIRED&allowPublicKeyRetrieval=true&connectTimeout=30000&socketTimeout=30000"
-$env:DATABASE_USERNAME = "avnadmin"
-$env:DATABASE_PASSWORD = "<YOUR_AIVEN_PASSWORD>"
-
-# Run the backend
-mvn spring-boot:run
+# Then start the backend
+cd Backend && mvn spring-boot:run
 ```
+
+### Option 2: Use Local MySQL
+```bash
+# Run this batch file to set local environment variables
+set-local-env.bat
+
+# Then start the backend
+cd Backend && mvn spring-boot:run
+```
+
+**Why the configuration changes:**
+- `application.properties` uses `${VARIABLE:fallback}` syntax
+- If environment variable is set → uses that value
+- If not set → uses safe fallback (localhost for development)
+- **Never hardcode secrets** in config files (security risk)
 
 Server should start on port 8080: `http://localhost:8080`

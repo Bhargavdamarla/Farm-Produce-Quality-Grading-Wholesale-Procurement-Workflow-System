@@ -1,3 +1,16 @@
+# Environment variables
+.env
+.env.local
+.env.production
+.env.*
+
+# Application properties backups (keep template only)
+Backend/src/main/resources/application.properties.backup
+Backend/src/main/resources/application.properties.local
+
+# Keep template as reference
+!Backend/src/main/resources/application.properties.template
+
 # Frontend
 Frontend/node_modules/
 Frontend/dist/
