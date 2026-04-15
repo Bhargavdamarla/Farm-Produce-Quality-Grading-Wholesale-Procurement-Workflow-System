@@ -1,0 +1,12 @@
+.git
+.gitignore
+.DS_Store
+*.log
+node_modules/
+.m2/
+.classpath
+.project
+.settings/
+.vscode/
+.idea/
+*.iml

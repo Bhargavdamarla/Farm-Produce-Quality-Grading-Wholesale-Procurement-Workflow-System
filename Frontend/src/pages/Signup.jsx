@@ -31,8 +31,13 @@ const Signup = () => {
     if (!formData.name.trim()) newErrors.name = 'Full name is required';
     if (!formData.email) {
       newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
+    } else if (!/^[A-Za-z0-9._%+-]+@gmail\.com$/.test(formData.email)) {
+      newErrors.email = 'Email must be a valid @gmail.com address';
+    }
+    if (!formData.phoneNumber) {
+      newErrors.phoneNumber = 'Phone number is required';
+    } else if (!/^\d{10}$/.test(formData.phoneNumber)) {
+      newErrors.phoneNumber = 'Phone number must be exactly 10 digits';
     }
     if (!formData.password) {
       newErrors.password = 'Password is required';
@@ -133,9 +138,14 @@ const Signup = () => {
                 name="phoneNumber"
                 value={formData.phoneNumber}
                 onChange={handleChange}
-                placeholder="+91 9999999999"
+                placeholder="9999999999"
+                maxLength="10"
+                inputMode="numeric"
+                pattern="\d{10}"
+                className={errors.phoneNumber ? 'input-error' : ''}
                 disabled={loading}
               />
+              {errors.phoneNumber && <span className="error-text">{errors.phoneNumber}</span>}
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>

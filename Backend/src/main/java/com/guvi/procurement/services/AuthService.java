@@ -17,7 +17,23 @@ public class AuthService {
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+    private boolean isValidGmail(String email) {
+        return email != null && email.matches("^[A-Za-z0-9._%+-]+@gmail\\.com$");
+    }
+
+    private boolean isValidPhoneNumber(String phoneNumber) {
+        return phoneNumber != null && phoneNumber.matches("^\\d{10}$");
+    }
+
     public AuthResponse register(RegisterRequest request) {
+        if (!isValidGmail(request.getEmail())) {
+            throw new RuntimeException("Email must be a valid @gmail.com address.");
+        }
+
+        if (!isValidPhoneNumber(request.getPhoneNumber())) {
+            throw new RuntimeException("Phone number must be exactly 10 digits.");
+        }
+
         // Check if email already exists
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email already registered. Please login instead.");
