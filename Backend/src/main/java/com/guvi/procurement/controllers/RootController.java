@@ -20,11 +20,5 @@ public class RootController {
         return ResponseEntity.ok(response);
     }
 
-    @RequestMapping("/error")
-    public ResponseEntity<Map<String, Object>> error() {
-        Map<String, Object> response = new HashMap<>();
-        response.put("status", "ERROR");
-        response.put("message", "The requested endpoint was not found. Use /api/health or /api/info.");
-        return ResponseEntity.status(404).body(response);
-    }
 }
+
